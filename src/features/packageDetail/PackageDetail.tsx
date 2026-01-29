@@ -123,6 +123,8 @@ export default function PackageDetail() {
                 </div>
             </div>
 
+            <br></br>
+
             {/* Tabs */}
             <Tabs value={activeTab} className="package-tabs">
                 <Tab label="Descripción" onClick={() => handleTabClick("section-description")} />
