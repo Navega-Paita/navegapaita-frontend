@@ -128,7 +128,16 @@ export default function PackageDetail() {
             <br></br>
 
             {/* Tabs */}
-            <Tabs value={activeTab} className="package-tabs">
+            <Tabs
+                value={activeTab}
+                className="package-tabs"
+                variant="scrollable" // Permite el scroll horizontal
+                scrollButtons="auto" // Muestra flechas solo si es necesario
+                allowScrollButtonsMobile // Obliga a que funcionen en móvil
+                sx={{
+                    '& .MuiTabs-scrollButtons.Mui-disabled': { opacity: 0.3 },
+                }}
+            >
                 <Tab label="Descripción" onClick={() => handleTabClick("section-description")} />
                 <Tab label="Itinerario" onClick={() => handleTabClick("section-itinerary")} />
                 <Tab label="Inclusiones" onClick={() => handleTabClick("section-inclusions")} />
