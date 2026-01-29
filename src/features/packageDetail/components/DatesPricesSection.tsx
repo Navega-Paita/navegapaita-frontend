@@ -99,23 +99,45 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                             <Box sx={{ flex: { xs: 1, md: 3 }, display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {d.discount > 0 && (
                                     <Chip
-                                        label={ { xs: '%', md: 'En Venta' }[ 'xs' ] } // Label corto en móvil
+                                        // UN SOLO ATRIBUTO LABEL:
+                                        label={
+                                            <Box component="span">
+                                                {/* Se muestra solo en móvil */}
+                                                <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+                                                    Sale
+                                                </Box>
+                                                {/* Se muestra solo en escritorio */}
+                                                <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+                                                    En Venta
+                                                </Box>
+                                            </Box>
+                                        }
                                         size="small"
                                         sx={{
-                                            bgcolor: '#00695c', color: 'white', fontWeight: 'bold', borderRadius: '4px',
-                                            '& .MuiChip-label': { px: { xs: 1, md: 1.5 } }
+                                            bgcolor: '#00695c',
+                                            color: 'white',
+                                            fontWeight: 'bold',
+                                            borderRadius: '4px',
+                                            '& .MuiChip-label': {
+                                                px: { xs: 1, md: 1.5 },
+                                                fontSize: { xs: '0.65rem', md: '0.75rem' }
+                                            }
                                         }}
-                                        // Si prefieres que diga "En Venta" siempre, solo quita el objeto label de arriba
-                                        label="En Venta"
                                     />
                                 )}
 
-                                {/* Ocultar textos de disponibilidad en móvil para no saturar la fila */}
+                                {/* Disponibilidad: Solo visible en Desktop (md) */}
                                 <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                                     {isFullyBooked ? (
                                         <Typography sx={{ fontWeight: 700 }}>Lleno</Typography>
                                     ) : (
-                                        <Typography variant="body2" sx={{ color: d.spaceLeft < 5 ? 'error.main' : 'text.secondary', fontWeight: d.spaceLeft < 5 ? 700 : 400 }}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: d.spaceLeft < 5 ? 'error.main' : 'text.secondary',
+                                                fontWeight: d.spaceLeft < 5 ? 700 : 400
+                                            }}
+                                        >
                                             {d.spaceLeft < 5 ? `${d.spaceLeft} espacios` : 'Disponible'}
                                         </Typography>
                                     )}
