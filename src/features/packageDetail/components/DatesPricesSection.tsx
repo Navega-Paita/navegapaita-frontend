@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
     Box, TextField, MenuItem, Typography, Button,
-    Collapse, IconButton, Chip
+    Collapse, Chip
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -26,9 +26,9 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
     };
 
     return (
-        <Box className="tab-content" sx={{ bgcolor: 'white', borderRadius: 2 }}>
-            {/* Buscador y Filtros */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, p: 2 }}>
+        <Box className="tab-content" sx={{ bgcolor: 'white', borderRadius: 2, overflow: 'hidden' }}>
+            {/* Buscador y Filtros - Stack vertical en móvil */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3, p: 2 }}>
                 <TextField
                     placeholder="Buscar fechas"
                     variant="outlined"
@@ -42,7 +42,7 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                     size="small"
                     value={sort}
                     onChange={e => setSort(e.target.value)}
-                    sx={{ width: 200 }}
+                    sx={{ width: { xs: '100%', sm: 200 } }}
                 >
                     <MenuItem value="date">Fechas recientes</MenuItem>
                     <MenuItem value="low">Precio (bajo)</MenuItem>
@@ -50,11 +50,14 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                 </TextField>
             </Box>
 
-            {/* Cabecera de "Tabla" Manual para mejor control de diseño */}
-            <Box sx={{ display: 'flex', px: 3, py: 1, borderBottom: '1px solid #eee', color: 'text.secondary' }}>
+            {/* Cabecera - Oculta en móvil */}
+            <Box sx={{
+                display: { xs: 'none', md: 'flex' },
+                px: 3, py: 1, borderBottom: '1px solid #eee', color: 'text.secondary'
+            }}>
                 <Typography sx={{ flex: 2, fontWeight: 600, fontSize: '0.85rem' }}>Inicio</Typography>
                 <Typography sx={{ flex: 2, fontWeight: 600, fontSize: '0.85rem' }}>Final</Typography>
-                <Typography sx={{ flex: 3, fontWeight: 600, fontSize: '0.85rem' }}></Typography>
+                <Typography sx={{ flex: 3, fontWeight: 600, fontSize: '0.85rem' }}>Estado</Typography>
                 <Typography sx={{ flex: 2, fontWeight: 600, fontSize: '0.85rem', textAlign: 'right' }}>
                     Precios desde <InfoOutlinedIcon sx={{ fontSize: 14, verticalAlign: 'middle' }} />
                 </Typography>
@@ -64,98 +67,116 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
             {filtered.map((d, i) => {
                 const isExpanded = expandedRow === i;
                 const isFullyBooked = d.spaceLeft === 0;
+                const finalPrice = d.price * (1 - d.discount / 100);
 
                 return (
                     <Box key={i} sx={{ borderBottom: '1px solid #eee' }}>
-                        {/* Fila Principal */}
+                        {/* Fila Principal Responsive */}
                         <Box
                             onClick={() => !isFullyBooked && handleRowClick(i)}
                             sx={{
-                                display: 'flex', alignItems: 'center', px: 3, py: 3,
+                                display: 'flex',
+                                alignItems: 'center',
+                                px: { xs: 2, md: 3 },
+                                py: { xs: 2, md: 3 },
                                 cursor: isFullyBooked ? 'default' : 'pointer',
                                 transition: 'background 0.2s',
                                 '&:hover': { bgcolor: isFullyBooked ? 'transparent' : '#f9f9f9' },
                                 opacity: isFullyBooked ? 0.7 : 1
                             }}
                         >
-                            <Typography sx={{ flex: 2, fontWeight: 500 }}>{d.startDate}</Typography>
-                            <Typography sx={{ flex: 2, fontWeight: 500 }}>{d.endDate}</Typography>
+                            {/* FECHA INICIO (Siempre visible) */}
+                            <Typography sx={{ flex: { xs: 1.5, md: 2 }, fontWeight: 500, fontSize: { xs: '0.9rem', md: '1rem' } }}>
+                                {d.startDate}
+                            </Typography>
 
-                            <Box sx={{ flex: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                {/* El badge aparece si hay cualquier porcentaje de descuento */}
+                            {/* FECHA FINAL (Oculta en móvil) */}
+                            <Typography sx={{ flex: 2, fontWeight: 500, display: { xs: 'none', md: 'block' } }}>
+                                {d.endDate}
+                            </Typography>
+
+                            {/* ESTADO / TAG (Lógica responsive para el badge) */}
+                            <Box sx={{ flex: { xs: 1, md: 3 }, display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {d.discount > 0 && (
                                     <Chip
-                                        label="En Venta"
+                                        label={ { xs: '%', md: 'En Venta' }[ 'xs' ] } // Label corto en móvil
                                         size="small"
-                                        sx={{ bgcolor: '#00695c', color: 'white', fontWeight: 'bold', borderRadius: '4px' }}
+                                        sx={{
+                                            bgcolor: '#00695c', color: 'white', fontWeight: 'bold', borderRadius: '4px',
+                                            '& .MuiChip-label': { px: { xs: 1, md: 1.5 } }
+                                        }}
+                                        // Si prefieres que diga "En Venta" siempre, solo quita el objeto label de arriba
+                                        label="En Venta"
                                     />
                                 )}
 
-                                {isFullyBooked ? (
-                                    <Typography sx={{ fontWeight: 700, color: 'text.primary' }}>Lleno</Typography>
-                                ) : (
-                                    <>
-                                        {d.spaceLeft < 5 && (
-                                            <Typography color="error" variant="body2" sx={{ fontWeight: 700 }}>
-                                                {d.spaceLeft} espacios
-                                            </Typography>
-                                        )}
-                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>Disponible</Typography>
-                                    </>
-                                )}
+                                {/* Ocultar textos de disponibilidad en móvil para no saturar la fila */}
+                                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                                    {isFullyBooked ? (
+                                        <Typography sx={{ fontWeight: 700 }}>Lleno</Typography>
+                                    ) : (
+                                        <Typography variant="body2" sx={{ color: d.spaceLeft < 5 ? 'error.main' : 'text.secondary', fontWeight: d.spaceLeft < 5 ? 700 : 400 }}>
+                                            {d.spaceLeft < 5 ? `${d.spaceLeft} espacios` : 'Disponible'}
+                                        </Typography>
+                                    )}
+                                </Box>
                             </Box>
 
-                            <Box sx={{ flex: 2, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                            {/* PRECIO (Siempre visible) */}
+                            <Box sx={{ flex: { xs: 1.5, md: 2 }, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                                 <Box>
-                                    {/* Si hay descuento, mostramos el precio base (d.price) tachado */}
                                     {d.discount > 0 && !isFullyBooked && (
                                         <Typography
                                             variant="caption"
-                                            sx={{ textDecoration: 'line-through', color: 'text.secondary', display: 'block' }}
+                                            sx={{ textDecoration: 'line-through', color: 'text.secondary', display: 'block', fontSize: '0.7rem' }}
                                         >
-                                            USD ${d.price}
+                                            ${d.price}
                                         </Typography>
                                     )}
-
-                                    <Typography sx={{ fontWeight: 700, fontSize: '1.2rem' }}>
-                                        {isFullyBooked ? '-' : `USD $${d.price * (1 - d.discount / 100)}`}
+                                    <Typography sx={{ fontWeight: 700, fontSize: { xs: '1rem', md: '1.2rem' } }}>
+                                        {isFullyBooked ? '-' : `$${finalPrice}`}
                                     </Typography>
                                 </Box>
-
-                                {!isFullyBooked && (isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />)}
+                                {!isFullyBooked && (isExpanded ? <KeyboardArrowUpIcon fontSize="small" /> : <KeyboardArrowDownIcon fontSize="small" />)}
                             </Box>
                         </Box>
 
-                        {/* Detalle Expandible */}
+                        {/* Detalle Expandible (Responsive) */}
                         <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                            <Box sx={{ p: 4, bgcolor: '#f4f4f4', display: 'flex', gap: 4 }}>
-                                {/* Timeline de viaje lateral */}
-                                <Box sx={{ borderLeft: '2px dotted #ccc', pl: 2, position: 'relative' }}>
+                            <Box sx={{
+                                p: { xs: 2, md: 4 },
+                                bgcolor: '#f4f4f4',
+                                display: 'flex',
+                                flexDirection: { xs: 'column', md: 'row' },
+                                gap: { xs: 2, md: 4 }
+                            }}>
+                                {/* Timeline */}
+                                <Box sx={{ borderLeft: '2px dotted #ccc', pl: 2 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 700 }}>INICIA</Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>{d.startDate}</Typography>
+                                    <Typography variant="body2" sx={{ mb: 1 }}>{d.startDate}</Typography>
                                     <Typography variant="caption" sx={{ fontWeight: 700 }}>TERMINA</Typography>
                                     <Typography variant="body2">{d.endDate}</Typography>
                                 </Box>
 
-                                {/* Detalles de Alojamiento y Botón */}
-                                <Box sx={{ flexGrow: 1, bgcolor: 'white', p: 3, borderRadius: 1, border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                {/* Botón y Detalles */}
+                                <Box sx={{
+                                    flexGrow: 1, bgcolor: 'white', p: 2, borderRadius: 1, border: '1px solid #ddd',
+                                    display: 'flex', flexDirection: { xs: 'column', sm: 'row' },
+                                    justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' },
+                                    gap: 2
+                                }}>
                                     <Box>
                                         <Typography sx={{ fontWeight: 700 }}>RESERVA</Typography>
-                                        <Typography variant="caption" color="primary" sx={{ cursor: 'pointer', textDecoration: 'underline' }}>
-                                            {d.spaceLeft} espacios faltantes
-                                        </Typography>
+                                        <Typography variant="caption" color="primary">{d.spaceLeft} espacios disponibles</Typography>
                                     </Box>
-                                    <Box sx={{ textAlign: 'right' }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 700 }}>USD ${d.price * (1 - d.discount / 100)}</Typography>
-                                        <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>por persona</Typography>
-                                        <Button
-                                            variant="contained"
-                                            sx={{ bgcolor: 'black', color: 'white', textTransform: 'none', px: 4, '&:hover': { bgcolor: '#333' } }}
-                                            onClick={() => console.log("Reservando fecha:", d)}
-                                        >
-                                            Solicitar reserva
-                                        </Button>
-                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        fullWidth={true} // Full width solo en móvil si es necesario por el contenedor
+                                        sx={{ bgcolor: 'black', color: 'white', textTransform: 'none', px: 4, maxWidth: { sm: '200px' } }}
+                                        onClick={() => console.log("Reservando:", d)}
+                                    >
+                                        Solicitar reserva
+                                    </Button>
                                 </Box>
                             </Box>
                         </Collapse>
