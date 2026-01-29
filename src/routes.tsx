@@ -4,6 +4,8 @@ import AboutPage from './features/about/AboutPage'
 import PackagesPage from './features/packages/PackagesPage'
 import ContactPage from './features/contact/ContactPage'
 import WishlistPage from './features/wishlist/WishlistPage'
+import PackageDetail from "./features/packageDetail/PackageDetail";
+
 
 export default function AppRoutes() {
     return (
@@ -14,7 +16,8 @@ export default function AppRoutes() {
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/perfil" element={<HomePage />} /> {/* Temporal */}
-            <Route path="/sobre-nosotros" element={<AboutPage />} /> {/* Para footer */}
+            <Route path="/sobre-nosotros" element={<AboutPage />} />
+            <Route path="/buscar/:slug" element={<PackageDetail />} />
         </Routes>
     )
 }
