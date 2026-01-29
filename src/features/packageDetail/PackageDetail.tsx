@@ -19,6 +19,7 @@ import { mockPackage} from "./mocks/mock.ts";
 import Gallery from "./components/Gallery";
 import ItinerarySection from "./components/ItinerarySection";
 import DatesPricesSection from "./components/DatesPricesSection";
+import InclusionsSection from "./components/InclusionsSection.tsx";
 import "./PackageDetail.css";
 
 
@@ -147,6 +148,8 @@ export default function PackageDetail() {
 
             <Box id="section-inclusions" className="tab-section">
                 <h2>Inclusiones y actividades</h2>
+                <br></br>
+                <InclusionsSection packageData={packageData} />
             </Box>
 
             <Box id="section-dates" className="tab-section">
