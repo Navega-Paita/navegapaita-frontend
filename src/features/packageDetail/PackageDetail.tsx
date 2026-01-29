@@ -39,7 +39,8 @@ export default function PackageDetail() {
         const sections = [
             { id: "section-description", index: 0 },
             { id: "section-itinerary", index: 1 },
-            { id: "section-dates", index: 2 }
+            { id: "section-inclusions", index: 2 },
+            { id: "section-dates", index: 3 }
         ];
 
         const observer = new IntersectionObserver(
@@ -129,6 +130,7 @@ export default function PackageDetail() {
             <Tabs value={activeTab} className="package-tabs">
                 <Tab label="Descripción" onClick={() => handleTabClick("section-description")} />
                 <Tab label="Itinerario" onClick={() => handleTabClick("section-itinerary")} />
+                <Tab label="Inclusiones" onClick={() => handleTabClick("section-inclusions")} />
                 <Tab label="Fechas y precios" onClick={() => handleTabClick("section-dates")} />
             </Tabs>
 
@@ -141,6 +143,10 @@ export default function PackageDetail() {
             <Box id="section-itinerary" className="tab-section">
                 <h2>Itinerario</h2>
                 <ItinerarySection itinerary={packageData.itinerary} />
+            </Box>
+
+            <Box id="section-inclusions" className="tab-section">
+                <h2>Inclusiones y actividades</h2>
             </Box>
 
             <Box id="section-dates" className="tab-section">
