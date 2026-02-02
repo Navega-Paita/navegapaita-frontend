@@ -25,6 +25,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { es } from 'date-fns/locale';
 import './SearchBar.css';
 import {CalendarIcon} from "@mui/x-date-pickers";
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 const MOCK_SUGGESTIONS: string[] = [
     'Peru',
@@ -35,6 +37,7 @@ const MOCK_SUGGESTIONS: string[] = [
 ];
 
 export default function SearchBar() {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState<string>('');
     // Tipamos las fechas como Date o null
     const [startDate, setStartDate] = useState<Date | null>(null);
@@ -78,10 +81,25 @@ export default function SearchBar() {
     };
 
     const handleSearch = (): void => {
-        console.log('Búsqueda iniciada:', {
-            query: searchQuery,
-            startDate,
-            endDate
+        const params = new URLSearchParams();
+
+        params.set('page', '1');
+
+        if (searchQuery.trim()) {
+            params.set('keyword', searchQuery.trim());
+        }
+
+        if (startDate) {
+            params.set('date_range_from', format(startDate, 'yyyy-MM-dd'));
+        }
+
+        if (endDate) {
+            params.set('date_range_to', format(endDate, 'yyyy-MM-dd'));
+        }
+
+        navigate({
+            pathname: '/buscar',
+            search: `?${params.toString()}`
         });
     };
 

@@ -19,6 +19,7 @@ import HeroCarousel from '../../shared/components/HeroCarousel/HeroCarousel.tsx'
 import ExperienceCard from '../../shared/components/ExperienceCard/ExperienceCard.tsx';
 import './HomePage.css';
 import type { Experience } from "../../shared/models/experience";
+import {useNavigate} from "react-router-dom";
 
 
 const EXPERIENCES: Record<string, Experience[]> = {
@@ -59,7 +60,6 @@ interface ExperienceCarouselProps {
 }
 
 export function ExperienceCarousel({ experiences }: ExperienceCarouselProps){
-    // Tipamos el ref como HTMLDivElement porque el Box de MUI renderiza un div por defecto
     const carouselRef = useRef<HTMLDivElement | null>(null);
 
     // Tipamos la dirección como una unión de strings literales para mayor seguridad
@@ -119,10 +119,26 @@ export function ExperienceCarousel({ experiences }: ExperienceCarouselProps){
 
 export default function HomePage() {
     const [selectedTab, setSelectedTab] = useState<number>(0);
+    const navigate = useNavigate();
 
     // Tipamos el cambio de tab siguiendo la firma de Material UI
     const handleTabChange = (_event: SyntheticEvent, newValue: number): void => {
         setSelectedTab(newValue);
+    };
+
+    const handleExploreExperienceClick = (searchValue: string) => {
+        const params = new URLSearchParams();
+
+        params.set('page', '1');
+
+        if (searchValue && searchValue.trim() !== "") {
+            params.set('keyword', searchValue.trim());
+        }
+
+        navigate({
+            pathname: '/buscar',
+            search: `?${params.toString()}`
+        });
     };
 
     // Mapeo de tabs a secciones de experiencias
@@ -220,6 +236,7 @@ export default function HomePage() {
 
                     <Box className="explore-button-container">
                         <Button
+                            onClick={() => handleExploreExperienceClick("")}
                             variant="outlined"
                             className="btn-explorar"
                             sx={{
@@ -271,6 +288,7 @@ export default function HomePage() {
                     </Typography>
                     <Box className="explore-button-container">
                         <Button
+                            onClick={() => handleExploreExperienceClick("bote")}
                             variant="outlined"
                             sx={{
                                 borderRadius: '30px',
