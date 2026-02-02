@@ -1,4 +1,8 @@
-import { Card, CardContent, CardMedia, Typography, Box, Chip } from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardMedia, Typography, Box, Chip, IconButton } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Experience } from "../../models/experience.ts";
 
 interface ExperienceCardProps {
@@ -6,11 +10,27 @@ interface ExperienceCardProps {
 }
 
 export default function ExperienceCard({ experience }: ExperienceCardProps) {
-    // TypeScript ahora sabe que originalPrice y price son números
+    const navigate = useNavigate();
+    const [isFavorite, setIsFavorite] = useState(false);
+
     const hasDiscount = !!(experience.originalPrice && experience.originalPrice > experience.price);
+
+    // Manejador para la Card (Navegación)
+    const handleCardClick = () => {
+        // Redirigimos a la ruta especificada
+        navigate(`/buscar/peru`);
+    };
+
+    // Manejador para Favoritos (Evita la navegación)
+    const handleFavoriteClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // CRÍTICO: Detiene el evento para que no se active handleCardClick
+        setIsFavorite(!isFavorite);
+        console.log("pulse en el boton");
+    };
 
     return (
         <Card
+            onClick={handleCardClick}
             sx={{
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -32,8 +52,29 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                     height="200"
                     image={experience.image}
                     alt={experience.title}
-                    sx={{ objectFit: 'cover' }}
+                    sx={{ width: '100%', objectFit: 'cover' }}
                 />
+
+                {/* Botón de Favoritos */}
+                <IconButton
+                    onClick={handleFavoriteClick}
+                    sx={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        backgroundColor: 'white',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        '&:hover': { backgroundColor: '#f5f5f5', transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s'
+                    }}
+                >
+                    {isFavorite ? (
+                        <FavoriteIcon sx={{ color: '#ff1744' }} />
+                    ) : (
+                        <FavoriteBorderIcon sx={{ color: 'text.secondary' }} />
+                    )}
+                </IconButton>
+
                 {experience.tag && (
                     <Chip
                         label={experience.tag}
@@ -52,61 +93,24 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
             </Box>
 
             <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2.5, backgroundColor: '#ffffff' }}>
-                <Typography
-                    sx={{
-                        fontSize: '13px',
-                        color: 'text.secondary',
-                        fontWeight: 500,
-                        mb: 1
-                    }}
-                >
+                <Typography sx={{ fontSize: '13px', color: 'text.secondary', fontWeight: 500, mb: 1 }}>
                     {experience.duration}
                 </Typography>
 
-                <Typography
-                    variant="h6"
-                    sx={{
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        mb: 2,
-                        lineHeight: 1.3,
-                        flexGrow: 1
-                    }}
-                >
+                <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 700, mb: 2, lineHeight: 1.3, flexGrow: 1 }}>
                     {experience.title}
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography
-                        sx={{
-                            fontSize: '13px',
-                            color: 'text.secondary',
-                            mr: 0.5
-                        }}
-                    >
-                        Desde
-                    </Typography>
+                    <Typography sx={{ fontSize: '13px', color: 'text.secondary', mr: 0.5 }}>Desde</Typography>
 
                     {hasDiscount && experience.originalPrice && (
-                        <Typography
-                            sx={{
-                                fontSize: '14px',
-                                color: 'text.secondary',
-                                textDecoration: 'line-through',
-                                fontWeight: 500
-                            }}
-                        >
+                        <Typography sx={{ fontSize: '14px', color: 'text.secondary', textDecoration: 'line-through', fontWeight: 500 }}>
                             USD ${experience.originalPrice.toLocaleString()}
                         </Typography>
                     )}
 
-                    <Typography
-                        sx={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: hasDiscount ? 'primary.main' : 'text.primary'
-                        }}
-                    >
+                    <Typography sx={{ fontSize: '18px', fontWeight: 700, color: hasDiscount ? '#d32f2f' : 'text.primary' }}>
                         USD ${experience.price.toLocaleString()}
                     </Typography>
                 </Box>
