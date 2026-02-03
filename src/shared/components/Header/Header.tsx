@@ -99,7 +99,7 @@ export default function Header() {
         <Box sx={{ width: 300 }} role="presentation">
             <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                    Navega<span style={{ fontWeight: 700 }}>paita</span>
+                    Paita<span style={{ fontWeight: 700 }}>Paita</span>
                 </Typography>
                 <IconButton onClick={toggleDrawer(false)}>
                     <Close />
@@ -164,7 +164,7 @@ export default function Header() {
                                     textAlign: 'center',
                                 }}
                             >
-                                Navegapaita
+                                NavegaPaita
                             </Typography>
 
                             <IconButton onClick={toggleDrawer(true)} sx={{ color: 'text.primary' }}>
@@ -179,7 +179,7 @@ export default function Header() {
                                 to="/"
                                 sx={{ fontWeight: 600, color: 'primary.main', textDecoration: 'none', mr: 4 }}
                             >
-                                Navegapaita
+                                NavegaPaita
                             </Typography>
 
                             <Box sx={{ display: 'flex', gap: 3, flexGrow: 1 }}>

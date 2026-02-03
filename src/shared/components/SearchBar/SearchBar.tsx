@@ -112,7 +112,7 @@ export default function SearchBar() {
                         <TextField
                             fullWidth
                             variant="standard"
-                            placeholder="¿A dónde quieres ir?"
+                            placeholder="¿Que te gustaria hacer hoy?"
                             value={searchQuery}
                             onChange={handleSearchChange}
                             InputProps={{
