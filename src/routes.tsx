@@ -6,6 +6,7 @@ import ContactPage from './features/contact/ContactPage'
 import WishlistPage from './features/wishlist/WishlistPage'
 import PackageDetail from "./features/packageDetail/PackageDetail";
 import SearchPage from './features/search/SearchPage';
+import { FleetMap } from './features/monitoring/components/FleetMap';
 
 
 export default function AppRoutes() {
@@ -20,6 +21,12 @@ export default function AppRoutes() {
             <Route path="/sobre-nosotros" element={<AboutPage />} />
             <Route path="/buscar/:slug" element={<PackageDetail />} />
             <Route path="/buscar" element={<SearchPage />} />
+            <Route path="/monitoreo" element={
+                <div style={{ padding: '20px' }}>
+                    <h1>Panel de Monitoreo de Embarcaciones</h1>
+                    <FleetMap />
+                </div>
+            } />
 
         </Routes>
     )
