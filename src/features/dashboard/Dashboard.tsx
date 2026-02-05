@@ -8,13 +8,42 @@ import type { FishermanStatus } from "../../shared/models/user.model";
 import { ref, onValue } from "firebase/database";
 import {db} from "../../core/config/firebase.ts";
 import { toast, Toaster } from "react-hot-toast";
-import alertSound from '../../assets/alert-sound.mp3'; // Ajusta los ../ según tu nivel de carpeta
+import alertSound from '../../assets/sounds/alert-sound.mp3'; // Ajusta los ../ según tu nivel de carpeta
+import type { SignalAlert, SignalAlertsMap} from "../../shared/models/signalAlert.ts";
 
 export const Dashboard: React.FC = () => {
     const [operations, setOperations] = useState<Operation[]>([]);
     const [fishermen, setFishermen] = useState<User[]>([]);
     const [vessels, setVessels] = useState<Vessel[]>([]);
     const alertAudio = new Audio(alertSound);
+
+    useEffect(() => {
+        const signalRef = ref(db, 'signal_alerts');
+        const alertAudio = new Audio('/assets/sounds/emergency-beep.mp3');
+
+        const unsubscribe = onValue(signalRef, (snapshot) => {
+            // Tipamos la data que viene de Firebase
+            const alerts = snapshot.val() as SignalAlertsMap | null;
+
+            if (alerts) {
+                // Ahora 'a' es reconocido como SignalAlert, eliminando el error de ESLint
+                const anyNew = Object.values(alerts).some((a: SignalAlert) =>
+                    a.trigger > Date.now() - 10000
+                );
+
+                if (anyNew) {
+                    alertAudio.play().catch(e => console.warn("Audio bloqueado:", e));
+
+                    toast.error("🚨 ALERTA DE SEGUIMIENTO: Se ha perdido la conexión GPS con una embarcación activa.", {
+                        duration: Infinity,
+                        icon: '📡'
+                    });
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         const alertRef = ref(db, 'incidents_alerts');
