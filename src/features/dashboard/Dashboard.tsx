@@ -5,11 +5,69 @@ import type { Operation } from "../../shared/models/operation.model";
 import type { User } from "../../shared/models/user.model";
 import type { Vessel } from "../../shared/models/vessel.model";
 import type { FishermanStatus } from "../../shared/models/user.model";
+import { ref, onValue } from "firebase/database";
+import {db} from "../../core/config/firebase.ts";
+import { toast, Toaster } from "react-hot-toast";
+import alertSound from '../../assets/alert-sound.mp3'; // Ajusta los ../ según tu nivel de carpeta
 
 export const Dashboard: React.FC = () => {
     const [operations, setOperations] = useState<Operation[]>([]);
     const [fishermen, setFishermen] = useState<User[]>([]);
     const [vessels, setVessels] = useState<Vessel[]>([]);
+    const alertAudio = new Audio(alertSound);
+
+    useEffect(() => {
+        const alertRef = ref(db, 'incidents_alerts');
+
+        const unsubscribe = onValue(alertRef, (snapshot) => {
+            const data = snapshot.val();
+
+            // Verificamos que el trigger sea reciente (últimos 5 segundos)
+            if (data && data.trigger > Date.now() - 5000) {
+
+                // 1. Sonar alerta usando la constante externa
+                alertAudio.currentTime = 0;
+                alertAudio.play().catch(err => console.log("Audio esperando interacción del usuario."));
+
+                // 2. Mostrar notificación persistente con botón de cierre (X)
+                toast.error((t) => (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '220px' }}>
+                    <span>
+                        <strong>⚠️ EMERGENCIA:</strong> {data.lastIncident.description}
+                    </span>
+                        <button
+                            onClick={() => {
+                                alertAudio.pause(); // Detiene el sonido al cerrar
+                                toast.dismiss(t.id); // Cierra el toast específico
+                            }}
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid #713200',
+                                borderRadius: '4px',
+                                marginLeft: '10px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                padding: '2px 6px'
+                            }}
+                        >
+                            X
+                        </button>
+                    </div>
+                ), {
+                    duration: Infinity,
+                    position: 'top-right',
+                    style: {
+                        border: '2px solid red',
+                        padding: '16px',
+                        color: '#713200',
+                        fontWeight: 'bold'
+                    },
+                });
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         // 1. Carga inicial de datos
@@ -73,6 +131,9 @@ export const Dashboard: React.FC = () => {
 
     return (
         <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+            {/* Contenedor de notificaciones */}
+            <Toaster position="top-right" reverseOrder={false} />
+
             <h1>Dashboard de Control Pesquero</h1>
 
             <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '20px' }}>
