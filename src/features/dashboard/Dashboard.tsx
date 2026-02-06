@@ -10,12 +10,15 @@ import {db} from "../../core/config/firebase.ts";
 import { toast, Toaster } from "react-hot-toast";
 import alertSound from '../../assets/sounds/alert-sound.mp3'; // Ajusta los ../ según tu nivel de carpeta
 import type { SignalAlert, SignalAlertsMap} from "../../shared/models/signalAlert.ts";
+import { ChatWindow} from "../chat/ChatWindow.tsx";
+
 
 export const Dashboard: React.FC = () => {
     const [operations, setOperations] = useState<Operation[]>([]);
     const [fishermen, setFishermen] = useState<User[]>([]);
     const [vessels, setVessels] = useState<Vessel[]>([]);
     const alertAudio = new Audio(alertSound);
+    const [activeChatId, setActiveChatId] = useState<number | null>(null);
 
     useEffect(() => {
         const signalRef = ref(db, 'signal_alerts');
@@ -178,22 +181,67 @@ export const Dashboard: React.FC = () => {
                             <th>Estado</th>
                             <th>Pescador</th>
                             <th>Motivo</th>
+                            <th>Chat</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {operations.map(op => (
-                            <tr key={op.id} style={{ textAlign: 'center' }}>
-                                <td>{op.id}</td>
-                                <td>{op.tourName}</td>
-                                <td style={{ fontWeight: 'bold', color: getStatusColor(op.status) }}>
-                                    {op.status}
-                                </td>
-                                <td>{op.fisherman ? `${op.fisherman.firstName} ${op.fisherman.lastName}` : '---'}</td>
-                                <td style={{ color: 'red', fontSize: '0.8em' }}>{op.rejectionReason || '-'}</td>
-                            </tr>
-                        ))}
+                        {operations.map(op => {
+                            // Definimos si el chat debe estar habilitado
+                            const isChatEnabled = op.status === 'IN_PROGRESS' || op.status === 'COMPLETED';
+
+                            return (
+                                <tr key={op.id} style={{ textAlign: 'center' }}>
+                                    <td>{op.id}</td>
+                                    <td>{op.tourName}</td>
+                                    <td style={{ fontWeight: 'bold', color: getStatusColor(op.status) }}>
+                                        {op.status}
+                                    </td>
+                                    <td>{op.fisherman ? `${op.fisherman.firstName} ${op.fisherman.lastName}` : '---'}</td>
+                                    <td style={{ color: 'red', fontSize: '0.8em' }}>{op.rejectionReason || '-'}</td>
+
+                                    {/* Columna de Chat con validación de estado */}
+                                    <td style={{ verticalAlign: 'middle' }}>
+                                        <button
+                                            onClick={() => isChatEnabled && setActiveChatId(op.id)}
+                                            disabled={!isChatEnabled}
+                                            style={{
+                                                // Reset de estilos de botón para que parezca solo texto
+                                                background: 'none',
+                                                border: 'none',
+                                                padding: '4px 8px',
+                                                margin: 0,
+                                                font: 'inherit',
+                                                fontWeight: '600',
+                                                fontSize: '0.85em',
+
+                                                // Lógica de cursor y color
+                                                cursor: isChatEnabled ? 'pointer' : 'not-allowed',
+                                                color: isChatEnabled ? '#0084FF' : '#999999',
+
+                                                // Efecto visual
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                textDecoration: isChatEnabled ? 'underline' : 'none',
+                                                opacity: isChatEnabled ? 1 : 0.7,
+                                                transition: 'color 0.2s ease'
+                                            }}
+                                        >
+                                            {isChatEnabled ? 'Abrir Chat' : 'Chat cerrado'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </table>
+                    {/* 3. Renderizado condicional de la ventana flotante */}
+                    {activeChatId && (
+                        <ChatWindow
+                            operationId={activeChatId}
+                            onClose={() => setActiveChatId(null)}
+                        />
+                    )}
                 </section>
 
                 {/* COLUMNA DERECHA: RECURSOS */}
@@ -225,6 +273,7 @@ export const Dashboard: React.FC = () => {
                             ))}
                         </ul>
                     </div>
+
                 </aside>
             </div>
         </div>

@@ -8,6 +8,7 @@ import PackageDetail from "./features/packageDetail/PackageDetail";
 import SearchPage from './features/search/SearchPage';
 import { FleetMap } from './features/monitoring/components/FleetMap';
 import { Dashboard } from './features/dashboard/Dashboard';
+import {ChatWindow} from "./features/chat/ChatWindow.tsx";
 
 
 export default function AppRoutes() {
@@ -23,6 +24,9 @@ export default function AppRoutes() {
             <Route path="/buscar/:slug" element={<PackageDetail />} />
             <Route path="/buscar" element={<SearchPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chat" element={<ChatWindow operationId={1} onClose={function(): void {
+                throw new Error("Function not implemented.")
+            } } />} />
             <Route path="/monitoreo" element={
                 <div style={{ padding: '20px' }}>
                     <h1>Panel de Monitoreo de Embarcaciones</h1>
