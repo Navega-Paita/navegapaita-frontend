@@ -3,13 +3,13 @@ import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA3G-mTYMF7D9SxM7iXvsLHGitSVNhhpSo",
-    authDomain: "navega-paita-b7c91.firebaseapp.com",
-    databaseURL: "https://navega-paita-b7c91-default-rtdb.firebaseio.com",
-    projectId: "navega-paita-b7c91",
-    storageBucket: "navega-paita-b7c91.firebasestorage.app",
-    messagingSenderId: "1091887332208",
-    appId: "1:1091887332208:web:b2465b49bfd88aa0f06db5"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
