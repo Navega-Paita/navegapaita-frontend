@@ -1,12 +1,11 @@
-import type { CloudinaryImage} from "./cloudinary.model.ts";
+import type { CloudinaryImage } from "../models/cloudinary.model.ts";
 
-export interface Vessel {
-    id: number;
+export interface CreateVesselDto {
     name: string;
     registrationNumber: string;
     type: string;
     capacity: number;
     technicalSpecs?: string;
-    status: string;
+    ownerId: number;
     image?: CloudinaryImage;
 }

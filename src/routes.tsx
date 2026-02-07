@@ -9,6 +9,7 @@ import SearchPage from './features/search/SearchPage';
 import { FleetMap } from './features/monitoring/components/FleetMap';
 import { Dashboard } from './features/dashboard/Dashboard';
 import {ChatWindow} from "./features/chat/ChatWindow.tsx";
+import {VesselForm} from "./features/vessels/VesselForm.tsx";
 
 
 export default function AppRoutes() {
@@ -24,6 +25,7 @@ export default function AppRoutes() {
             <Route path="/buscar/:slug" element={<PackageDetail />} />
             <Route path="/buscar" element={<SearchPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/embarcaciones" element={<VesselForm />} />
             <Route path="/chat" element={<ChatWindow operationId={1} onClose={function(): void {
                 throw new Error("Function not implemented.")
             } } />} />
