@@ -16,7 +16,7 @@ interface ChatWindowProps {
 export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null); // Renombrado para claridad
 
     // 1. Escuchar mensajes en tiempo real
     useEffect(() => {
@@ -36,7 +36,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
 
     // 2. Auto-scroll al recibir mensajes
     useEffect(() => {
-        scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
     // 3. Enviar mensaje
@@ -118,6 +118,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
                         </div>
                     );
                 })}
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Input inferior */}
