@@ -3,20 +3,36 @@ import { vesselService} from "../../core/services/vessel.service.ts";
 import type { CreateVesselDto } from "../../shared/dtos/vessel.dto.ts";
 import { ImageCropper } from '../../shared/components/ImageCropper/ImageCropper.tsx';
 
-export const VesselForm: React.FC = () => {
-    const [formData, setFormData] = useState<CreateVesselDto>({
-        name: '',
-        registrationNumber: '',
-        type: '',
-        capacity: 0,
-        technicalSpecs: '',
-        ownerId: 1, // ID del pescador logueado
-    });
+const initialFormState: CreateVesselDto = {
+    name: '',
+    registrationNumber: '',
+    type: '',
+    capacity: 0,
+    technicalSpecs: '',
+    ownerId: 1,
+};
 
+export const VesselForm: React.FC = () => {
+    const [formData, setFormData] = useState<CreateVesselDto>(initialFormState);
     const [loading, setLoading] = useState(false);
     const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
     const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // Creamos una referencia para el input de archivo
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const resetForm = () => {
+        setFormData(initialFormState);
+        setPreviewUrl(null);
+        setCroppedBlob(null);
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+        // Limpiamos el input de archivo manualmente
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -27,26 +43,24 @@ export const VesselForm: React.FC = () => {
     };
 
     const handleCropComplete = (blob: Blob) => {
+        // Si ya existía una URL previa, la liberamos
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+        const url = URL.createObjectURL(blob);
         setCroppedBlob(blob);
-        setPreviewUrl(URL.createObjectURL(blob));
+        setPreviewUrl(url);
         setTempImageSrc(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Validación preventiva: si el modal del cropper está abierto, no dejar enviar
         if (tempImageSrc) return;
 
         setLoading(true);
         try {
             await vesselService.registerVesselFull(formData, croppedBlob);
             alert("Embarcación registrada correctamente");
-
-            // Limpiar el preview después de un registro exitoso
-            setPreviewUrl(null);
-            setCroppedBlob(null);
-
+            resetForm(); // Esto ahora sí funcionará porque los inputs están vinculados
         } catch (error) {
             alert("Error al registrar");
             console.error(error);
@@ -57,15 +71,25 @@ export const VesselForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '500px' }}>
-            <input type="text" placeholder="Nombre" required onChange={e => setFormData({...formData, name: e.target.value})} />
-            <input type="text" placeholder="Matrícula" required onChange={e => setFormData({...formData, registrationNumber: e.target.value})} />
-            <input type="text" placeholder="Tipo" required onChange={e => setFormData({...formData, type: e.target.value})} />
-            <input type="number" placeholder="Capacidad" required onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
-            <textarea placeholder="Especificaciones" onChange={e => setFormData({...formData, technicalSpecs: e.target.value})} />
+            <input type="text" placeholder="Nombre" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            <input type="text" placeholder="Matrícula" required value={formData.registrationNumber} onChange={e => setFormData({...formData, registrationNumber: e.target.value})} />
+            <input type="text" placeholder="Tipo" required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} />
+            <input type="number" placeholder="Capacidad" required value={formData.capacity || ''} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
+            <textarea placeholder="Especificaciones" value={formData.technicalSpecs || ''} onChange={e => setFormData({...formData, technicalSpecs: e.target.value})} />
 
             <div style={{ border: '2px dashed #ccc', padding: '20px', textAlign: 'center' }}>
-                {previewUrl && <img src={previewUrl} alt="Preview" style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />}
-                <input type="file" accept="image/*" onChange={handleFileChange} />
+                {previewUrl && (
+                    <div style={{ marginBottom: '10px' }}>
+                        <img src={previewUrl} alt="Preview" style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => { setPreviewUrl(null); setCroppedBlob(null); if(fileInputRef.current) fileInputRef.current.value=''; }} style={{ color: 'red', cursor: 'pointer', border: 'none', background: 'none' }}>Eliminar foto</button>
+                    </div>
+                )}
+                <input
+                    type="file"
+                    ref={fileInputRef} // Referencia para limpiar
+                    accept="image/*"
+                    onChange={handleFileChange}
+                />
             </div>
 
             {tempImageSrc && (

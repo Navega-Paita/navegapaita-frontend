@@ -5,6 +5,7 @@ import type { CloudinaryImage } from "../../shared/models/cloudinary.model.ts";
 const API_URL = 'http://localhost:3000';
 
 export const vesselService = {
+
     /**
      * Registra la embarcación en nuestro Backend NestJS (RF2.1)
      */
@@ -66,5 +67,16 @@ export const vesselService = {
         console.log("LOG [registerVesselFull]: Payload final listo para NestJS:", finalPayload);
 
         return await vesselService.createVessel(finalPayload);
+    },
+
+    deleteVessel: async (id: number): Promise<void> => {
+        const response = await fetch(`${API_URL}/vessels/${id}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'No se pudo eliminar la embarcación');
+        }
     }
 };

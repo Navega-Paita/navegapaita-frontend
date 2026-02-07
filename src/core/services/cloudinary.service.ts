@@ -1,7 +1,7 @@
 import type {CloudinaryImage} from "../../shared/models/cloudinary.model.ts";
 
-const CLOUD_NAME = 'detiynwbm'; // Cambia esto por tu nombre de Cloud
-const UPLOAD_PRESET = 'vessels_preset'; // Cambia esto por tu preset
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
 export const cloudinaryService = {
