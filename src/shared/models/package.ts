@@ -1,3 +1,5 @@
+import type { CloudinaryImage } from './cloudinary.model';
+
 export interface Package {
     id: number;
     title: string;
@@ -9,7 +11,7 @@ export interface Package {
     minAge: number;
     groupSize: number;
     destinations: string[];
-    imageGallery: string[];
+    imageGallery: CloudinaryImage[];
     priceFrom: {
         amount: number;
         discountPercentage: number;

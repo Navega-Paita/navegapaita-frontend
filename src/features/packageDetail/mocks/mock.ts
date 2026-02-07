@@ -18,11 +18,26 @@ frente al mar.
     groupSize: 12,
     destinations: ["Paita", "Islotes costeros", "Caleta La Islilla"],
     imageGallery: [
-        "https://images.unsplash.com/photo-1559827260-dc66d52bef19",
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
-        "https://images.unsplash.com/photo-1517836357463-d25dfeac3438",
-        "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+        {
+            url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19",
+            publicId: "mock/paita_bay_1"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+            publicId: "mock/paita_bay_2"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+            publicId: "mock/paita_bay_3"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438",
+            publicId: "mock/paita_bay_4"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+            publicId: "mock/paita_bay_5"
+        }
     ],
     priceFrom: {
         amount: 45,
