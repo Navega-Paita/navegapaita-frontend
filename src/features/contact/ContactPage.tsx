@@ -1,10 +1,10 @@
 import { Box, Container, Typography, Grid, Paper, Link, Breadcrumbs } from '@mui/material';
 import {
-    Phone as PhoneIcon,
     Email as EmailIcon,
     LocationOn as LocationIcon,
     DirectionsRun as DirectionsRunIcon
 } from '@mui/icons-material';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 export default function ContactPage() {
@@ -48,13 +48,16 @@ export default function ContactPage() {
                             />
                         </Grid>
 
-                        {/* Tarjeta 2: Llamadas */}
+                        {/* Tarjeta 2: WhatsApp */}
                         <Grid size={{ xs: 12, md: 6 }}>
                             <ContactCard
-                                icon={<PhoneIcon sx={{ fontSize: 32 }} />}
-                                title="Llámanos"
-                                description="Llámanos al "
-                                link={{ label: "+1 707 296 7011", href: "tel:+17072967011" }}
+                                icon={<WhatsAppIcon sx={{ fontSize: 32 }} />} // Color verde oficial de WA
+                                title="Escríbenos"
+                                description="Chatea con nosotros por WhatsApp al "
+                                link={{
+                                    label: "+51 903 055 567",
+                                    href: "https://wa.me/51903055567?text=Hola,%20deseo%20más%20información%20sobre%20los%20paquetes%20turisticos"
+                                }}
                             />
                         </Grid>
 

@@ -24,21 +24,21 @@ import {useNavigate} from "react-router-dom";
 
 const EXPERIENCES: Record<string, Experience[]> = {
     unique: [
-        { id: '1', title: 'Paseo en bote tradicional por la bahía', duration: '4 horas', price: 45, originalPrice: 60, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop', tag: 'Popular' },
-        { id: '2', title: 'Taller de elaboración de ceviche', duration: '3 horas', price: 35, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop' },
-        { id: '3', title: 'Tour artesanal con pescadores locales', duration: '5 horas', price: 55, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop' },
-        { id: '4', title: 'Experiencia gastronómica frente al mar', duration: '2.5 horas', price: 40, image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop' },
-        { id: '5', title: 'Pesca artesanal al amanecer', duration: '6 horas', price: 65, originalPrice: 80, image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop' },
+        { id: '1', title: 'Paseo en bote tradicional por la bahía', duration: '4 horas', isFavorite: false, price: 45, originalPrice: 60, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop', tag: 'Popular' },
+        { id: '2', title: 'Taller de elaboración de ceviche', duration: '3 horas', isFavorite: false, price: 35, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop' },
+        { id: '3', title: 'Tour artesanal con pescadores locales', duration: '5 horas', isFavorite: false, price: 55, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop' },
+        { id: '4', title: 'Experiencia gastronómica frente al mar', duration: '2.5 horas', isFavorite: false, price: 40, image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop' },
+        { id: '5', title: 'Pesca artesanal al amanecer', duration: '6 horas', price: 65, isFavorite: false, originalPrice: 80, image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop' },
     ],
     new: [
-        { id: '11', title: 'Experiencia de buceo en arrecifes', duration: '5 horas', price: 85, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', tag: 'Nuevo' },
-        { id: '12', title: 'Taller de nudos marineros', duration: '2 horas', price: 25, image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', tag: 'Nuevo' },
+        { id: '11', title: 'Experiencia de buceo en arrecifes', duration: '5 horas', isFavorite: false, price: 85, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', tag: 'Nuevo' },
+        { id: '12', title: 'Taller de nudos marineros', duration: '2 horas', isFavorite: false, price: 25, image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', tag: 'Nuevo' },
     ],
     popular: [
-        { id: '21', title: 'Full day: Playas del norte', duration: '8 horas', price: 78, originalPrice: 95, image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop', tag: 'Bestseller' },
+        { id: '21', title: 'Full day: Playas del norte', duration: '8 horas', isFavorite: false, price: 78, originalPrice: 95, image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop', tag: 'Bestseller' },
     ],
     marine: [
-        { id: '31', title: 'Observación de delfines', duration: '5 horas', price: 72, image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop' },
+        { id: '31', title: 'Observación de delfines', duration: '5 horas', isFavorite: false, price: 72, image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop' },
     ]
 };
 

@@ -6,6 +6,7 @@ export interface Experience {
     duration: string;
     price: number;
     originalPrice?: number;
+    isFavorite: boolean;
     tag?: string;
     location?: string; // Ejemplo de expansión futura
 }

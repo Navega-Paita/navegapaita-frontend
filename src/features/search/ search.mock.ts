@@ -1,19 +1,11 @@
+import type {Experience} from "../../shared/models/experience.ts";
+
 export interface SearchResponse {
     page: number;
     pageSize: number;
     totalItems: number;
     totalPages: number;
     items: Experience[];
-}
-
-export interface Experience {
-    id: string;
-    title: string;
-    duration: string;
-    price: number;
-    originalPrice?: number;
-    image: string;
-    tag?: string;
 }
 
 const ALL_EXPERIENCES: Experience[] = [
@@ -23,6 +15,7 @@ const ALL_EXPERIENCES: Experience[] = [
         duration: '4 horas',
         price: 45,
         originalPrice: 60,
+        isFavorite: false,
         image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop',
         tag: 'Popular'
     },
@@ -31,6 +24,7 @@ const ALL_EXPERIENCES: Experience[] = [
         title: 'Taller de elaboración de ceviche',
         duration: '3 horas',
         price: 35,
+        isFavorite: false,
         image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop'
     },
     {
@@ -38,6 +32,7 @@ const ALL_EXPERIENCES: Experience[] = [
         title: 'Tour artesanal con pescadores locales',
         duration: '5 horas',
         price: 55,
+        isFavorite: false,
         image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop'
     },
     {
@@ -45,6 +40,7 @@ const ALL_EXPERIENCES: Experience[] = [
         title: 'Experiencia gastronómica frente al mar',
         duration: '2.5 horas',
         price: 40,
+        isFavorite: false,
         image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop'
     },
     {
@@ -53,6 +49,7 @@ const ALL_EXPERIENCES: Experience[] = [
         duration: '6 horas',
         price: 65,
         originalPrice: 80,
+        isFavorite: false,
         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop'
     },
     // duplicamos para simular muchas páginas
@@ -60,6 +57,7 @@ const ALL_EXPERIENCES: Experience[] = [
         id: `x-${i}`,
         title: `Experiencia costera ${i + 1}`,
         duration: '4 horas',
+        isFavorite: false,
         price: 50 + i,
         image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop'
     }))
@@ -108,3 +106,19 @@ export function mockSearchApi(
     };
 }
 
+export function mockWishlistApi(): SearchResponse {
+    const wishlistItems = ALL_EXPERIENCES.slice(0, 2).map(exp => ({
+        ...exp,
+        isFavorite: true
+    }));
+
+    console.log(wishlistItems);
+
+    return {
+        page: 1,
+        pageSize: 9,
+        totalItems: wishlistItems.length,
+        totalPages: 1,
+        items: wishlistItems
+    };
+}

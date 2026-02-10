@@ -11,7 +11,7 @@ interface ExperienceCardProps {
 
 export default function ExperienceCard({ experience }: ExperienceCardProps) {
     const navigate = useNavigate();
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(experience.isFavorite);
 
     const hasDiscount = !!(experience.originalPrice && experience.originalPrice > experience.price);
 
@@ -23,9 +23,9 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
 
     // Manejador para Favoritos (Evita la navegación)
     const handleFavoriteClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); // CRÍTICO: Detiene el evento para que no se active handleCardClick
+        e.stopPropagation();
         setIsFavorite(!isFavorite);
-        console.log("pulse en el boton");
+        console.log(`Estado favorito de "${experience.title}":`, !isFavorite);
     };
 
     return (
@@ -55,7 +55,6 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                     sx={{ width: '100%', objectFit: 'cover' }}
                 />
 
-                {/* Botón de Favoritos */}
                 <IconButton
                     onClick={handleFavoriteClick}
                     sx={{
@@ -63,11 +62,13 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                         top: 12,
                         right: 12,
                         backgroundColor: 'white',
+                        zIndex: 10, // Asegura que esté por encima de la imagen
                         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                         '&:hover': { backgroundColor: '#f5f5f5', transform: 'scale(1.1)' },
                         transition: 'transform 0.2s'
                     }}
                 >
+                    {/* Renderizado condicional del icono basado en el estado */}
                     {isFavorite ? (
                         <FavoriteIcon sx={{ color: '#ff1744' }} />
                     ) : (
