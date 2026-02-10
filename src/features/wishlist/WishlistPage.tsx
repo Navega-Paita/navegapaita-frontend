@@ -13,19 +13,19 @@ export default function WishlistPage() {
                 <Link underline="hover" color="inherit" href="/">
                     Home
                 </Link>
-                <Typography color="text.primary">My wishlist</Typography>
+                <Typography color="text.primary">Lista de deseos</Typography>
             </Breadcrumbs>
 
             {/* 2. Título y Frase */}
             <Box sx={{ textAlign: 'center', mb: 6 }}>
                 <Typography variant="h3" sx={{ fontWeight: 600, mb: 2, fontFamily: 'Montserrat' }}>
-                    My wishlist
+                    Mi Lista de deseos
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    Start creating your wishlist
+                    Empieza a crear tu lista de deseos
                 </Typography>
                 <Typography color="text.secondary">
-                    Explore trips and add your favourites for later
+                    Explora viajes y añade tus favoritos para más tarde
                 </Typography>
             </Box>
 
@@ -43,7 +43,7 @@ export default function WishlistPage() {
                     }}
                     onClick={() => console.log("Remover todos los viajes")}
                 >
-                    Remove all trips
+                    Eliminar todos los viajes
                 </Button>
             </Box>
 
