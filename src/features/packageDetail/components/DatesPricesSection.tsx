@@ -6,9 +6,9 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import type { DatePriceItem } from "../../../shared/models/package.ts";
+import type { AvailabilityItem } from "../../../shared/models/package.ts";
 
-export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }) {
+export default function AvailabilitySection({ dates }: { dates: AvailabilityItem[] }) {
     const [query, setQuery] = useState("");
     const [sort, setSort] = useState("date");
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
@@ -16,8 +16,7 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
     const filtered = dates
         .filter(d => d.startDate.toLowerCase().includes(query.toLowerCase()))
         .sort((a, b) => {
-            if (sort === "low") return a.price - b.price;
-            if (sort === "high") return b.price - a.price;
+            // Ordenamos siempre por fecha (más próxima primero)
             return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
         });
 
@@ -45,8 +44,6 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                     sx={{ width: { xs: '100%', sm: 200 } }}
                 >
                     <MenuItem value="date">Fechas recientes</MenuItem>
-                    <MenuItem value="low">Precio (bajo)</MenuItem>
-                    <MenuItem value="high">Precio (alto)</MenuItem>
                 </TextField>
             </Box>
 
@@ -59,7 +56,7 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                 <Typography sx={{ flex: 2, fontWeight: 600, fontSize: '0.85rem' }}>Final</Typography>
                 <Typography sx={{ flex: 3, fontWeight: 600, fontSize: '0.85rem' }}>Estado</Typography>
                 <Typography sx={{ flex: 2, fontWeight: 600, fontSize: '0.85rem', textAlign: 'right' }}>
-                    Precios desde <InfoOutlinedIcon sx={{ fontSize: 14, verticalAlign: 'middle' }} />
+                    Reserva
                 </Typography>
             </Box>
 
@@ -67,7 +64,6 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
             {filtered.map((d, i) => {
                 const isExpanded = expandedRow === i;
                 const isFullyBooked = d.spaceLeft === 0;
-                const finalPrice = d.price * (1 - d.discount / 100);
 
                 return (
                     <Box key={i} sx={{ borderBottom: '1px solid #eee' }}>
@@ -79,7 +75,7 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                                 alignItems: 'center',
                                 px: { xs: 2, md: 3 },
                                 py: { xs: 2, md: 3 },
-                                cursor: isFullyBooked ? 'default' : 'pointer',
+                                cursor: 'default',
                                 transition: 'background 0.2s',
                                 '&:hover': { bgcolor: isFullyBooked ? 'transparent' : '#f9f9f9' },
                                 opacity: isFullyBooked ? 0.7 : 1
@@ -95,113 +91,68 @@ export default function DatesPricesSection({ dates }: { dates: DatePriceItem[] }
                                 {d.endDate}
                             </Typography>
 
-                            {/* ESTADO / TAG (Lógica responsive para el badge) */}
+                            {/* ESTADO / TAG (Lógica de Disponibilidad) */}
                             <Box sx={{ flex: { xs: 1, md: 3 }, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                {d.discount > 0 && (
-                                    <Chip
-                                        // UN SOLO ATRIBUTO LABEL:
-                                        label={
-                                            <Box component="span">
-                                                {/* Se muestra solo en móvil */}
-                                                <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
-                                                    Sale
-                                                </Box>
-                                                {/* Se muestra solo en escritorio */}
-                                                <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
-                                                    En Venta
-                                                </Box>
-                                            </Box>
+                                <Chip
+                                    label={
+                                        <Box component="span">
+                                            {/* Texto dinámico según disponibilidad */}
+                                            {d.spaceLeft === 0 ? "Agotado" : (
+                                                <>
+                                                    <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>
+                                                        {d.spaceLeft} cupos
+                                                    </Box>
+                                                    <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>
+                                                        Disponibilidad: {d.spaceLeft} espacios
+                                                    </Box>
+                                                </>
+                                            )}
+                                        </Box>
+                                    }
+                                    size="small"
+                                    sx={{
+                                        // Cambia de color: Gris si está lleno, Azul/Verde si hay cupos
+                                        bgcolor: d.spaceLeft === 0 ? '#e0e0e0' : '#e0f2f1',
+                                        color: d.spaceLeft === 0 ? '#757575' : '#00695c',
+                                        border: d.spaceLeft === 0 ? 'none' : '1px solid #b2dfdb',
+                                        fontWeight: 'bold',
+                                        borderRadius: '4px',
+                                        '& .MuiChip-label': {
+                                            px: { xs: 1, md: 1.5 },
+                                            fontSize: { xs: '0.65rem', md: '0.75rem' }
                                         }
-                                        size="small"
-                                        sx={{
-                                            bgcolor: '#00695c',
-                                            color: 'white',
-                                            fontWeight: 'bold',
-                                            borderRadius: '4px',
-                                            '& .MuiChip-label': {
-                                                px: { xs: 1, md: 1.5 },
-                                                fontSize: { xs: '0.65rem', md: '0.75rem' }
-                                            }
-                                        }}
-                                    />
-                                )}
-
-                                {/* Disponibilidad: Solo visible en Desktop (md) */}
-                                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                                    {isFullyBooked ? (
-                                        <Typography sx={{ fontWeight: 700 }}>Lleno</Typography>
-                                    ) : (
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                color: d.spaceLeft < 5 ? 'error.main' : 'text.secondary',
-                                                fontWeight: d.spaceLeft < 5 ? 700 : 400
-                                            }}
-                                        >
-                                            {d.spaceLeft < 5 ? `${d.spaceLeft} espacios` : 'Disponible'}
-                                        </Typography>
-                                    )}
-                                </Box>
+                                    }}
+                                />
                             </Box>
 
-                            {/* PRECIO (Siempre visible) */}
-                            <Box sx={{ flex: { xs: 1.5, md: 2 }, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
-                                <Box>
-                                    {d.discount > 0 && !isFullyBooked && (
-                                        <Typography
-                                            variant="caption"
-                                            sx={{ textDecoration: 'line-through', color: 'text.secondary', display: 'block', fontSize: '0.7rem' }}
-                                        >
-                                            ${d.price}
-                                        </Typography>
-                                    )}
-                                    <Typography sx={{ fontWeight: 700, fontSize: { xs: '1rem', md: '1.2rem' } }}>
-                                        {isFullyBooked ? '-' : `$${finalPrice}`}
-                                    </Typography>
-                                </Box>
-                                {!isFullyBooked && (isExpanded ? <KeyboardArrowUpIcon fontSize="small" /> : <KeyboardArrowDownIcon fontSize="small" />)}
-                            </Box>
-                        </Box>
-
-                        {/* Detalle Expandible (Responsive) */}
-                        <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                            <Box sx={{
-                                p: { xs: 2, md: 4 },
-                                bgcolor: '#f4f4f4',
-                                display: 'flex',
-                                flexDirection: { xs: 'column', md: 'row' },
-                                gap: { xs: 2, md: 4 }
-                            }}>
-                                {/* Timeline */}
-                                <Box sx={{ borderLeft: '2px dotted #ccc', pl: 2 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>INICIA</Typography>
-                                    <Typography variant="body2" sx={{ mb: 1 }}>{d.startDate}</Typography>
-                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>TERMINA</Typography>
-                                    <Typography variant="body2">{d.endDate}</Typography>
-                                </Box>
-
-                                {/* Botón y Detalles */}
-                                <Box sx={{
-                                    flexGrow: 1, bgcolor: 'white', p: 2, borderRadius: 1, border: '1px solid #ddd',
-                                    display: 'flex', flexDirection: { xs: 'column', sm: 'row' },
-                                    justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' },
-                                    gap: 2
-                                }}>
-                                    <Box>
-                                        <Typography sx={{ fontWeight: 700 }}>RESERVA</Typography>
-                                        <Typography variant="caption" color="primary">{d.spaceLeft} espacios disponibles</Typography>
-                                    </Box>
+                            {/* ACCIÓN (Botón de Reserva) */}
+                            <Box sx={{ flex: { xs: 1.5, md: 2 }, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                                {!isFullyBooked ? (
                                     <Button
                                         variant="contained"
-                                        fullWidth={true} // Full width solo en móvil si es necesario por el contenedor
-                                        sx={{ bgcolor: 'black', color: 'white', textTransform: 'none', px: 4, maxWidth: { sm: '200px' } }}
-                                        onClick={() => console.log("Reservando:", d)}
+                                        sx={{
+                                            bgcolor: 'black',
+                                            color: 'white',
+                                            textTransform: 'none',
+                                            px: 4,
+                                            borderRadius: 1,
+                                            '&:hover': { bgcolor: '#333' }
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            console.log("Reservando fecha:", d.startDate);
+                                        }}
                                     >
                                         Solicitar reserva
                                     </Button>
-                                </Box>
+                                ) : (
+                                    <Typography sx={{ fontWeight: 700, color: 'text.disabled', mr: 2 }}>
+                                        Agotado
+                                    </Typography>
+                                )}
+
                             </Box>
-                        </Collapse>
+                        </Box>
                     </Box>
                 );
             })}

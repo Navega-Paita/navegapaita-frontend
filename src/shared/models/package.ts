@@ -10,14 +10,13 @@ export interface Package {
     transport: string;
     minAge: number;
     groupSize: number;
+    type: string;
+    price: number;
+    discount: number;
     destinations: string[];
     imageGallery: CloudinaryImage[];
-    priceFrom: {
-        amount: number;
-        discountPercentage: number;
-    };
     itinerary: ItineraryItem[];
-    datesAndPrices: DatePriceItem[];
+    availability: AvailabilityItem[];
 }
 
 export interface ItineraryItem {
@@ -27,10 +26,8 @@ export interface ItineraryItem {
     optionalActivities: string[];
 }
 
-export interface DatePriceItem {
+export interface AvailabilityItem {
     startDate: string; // ISO
     endDate: string;   // ISO
     spaceLeft: number;
-    price: number;
-    discount: number; // porcentaje
 }

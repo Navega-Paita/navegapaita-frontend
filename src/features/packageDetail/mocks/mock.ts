@@ -11,11 +11,14 @@ guiado por pescadores locales que compartirán historias, costumbres y paisajes 
 Incluye navegación costera, avistamiento de fauna marina y una degustación gastronómica
 frente al mar.
   `,
+    type:"Paseo",
     duration: "4 horas",
     meals: "1 almuerzo marino",
     transport: "Bote artesanal motorizado",
     minAge: 6,
     groupSize: 12,
+    price: 50,
+    discount: 10,
     destinations: ["Paita", "Islotes costeros", "Caleta La Islilla"],
     imageGallery: [
         {
@@ -39,10 +42,6 @@ frente al mar.
             publicId: "mock/paita_bay_5"
         }
     ],
-    priceFrom: {
-        amount: 45,
-        discountPercentage: 25
-    },
     itinerary: [
         {
             title: "Bienvenida y salida desde el muelle",
@@ -85,34 +84,26 @@ frente al mar.
             ]
         }
     ],
-    datesAndPrices: [
+    availability: [
         {
             startDate: "2026-02-07",
             endDate: "2026-02-07",
             spaceLeft: 2,
-            price: 60,
-            discount: 25
         },
         {
             startDate: "2026-02-14",
             endDate: "2026-02-14",
             spaceLeft: 0,
-            price: 55,
-            discount: 0
         },
         {
             startDate: "2026-03-05",
             endDate: "2026-03-05",
             spaceLeft: 6,
-            price: 45,
-            discount: 20
         },
         {
             startDate: "2026-03-20",
             endDate: "2026-03-20",
             spaceLeft: 10,
-            price: 50,
-            discount: 10
         }
     ]
 };

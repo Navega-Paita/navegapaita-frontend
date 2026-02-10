@@ -92,14 +92,14 @@ export default function PackageDetail() {
                         <Typography className="price-label">Desde</Typography>
 
                         <Box className="price-row">
-                            <Typography className="price-final">USD {mockPackage.priceFrom.amount}</Typography>
+                            <Typography className="price-final">USD {mockPackage.price}</Typography>
                             <Typography className="price-original">
-                                USD {Math.round(mockPackage.priceFrom.amount / (1 - mockPackage.priceFrom.discountPercentage / 100))}
+                                USD {Math.round(mockPackage.price / (1 - mockPackage.discount / 100))}
                             </Typography>
                         </Box>
 
                         <Chip
-                            label={`-${mockPackage.priceFrom.discountPercentage}% OFF`}
+                            label={`-${mockPackage.discount}% OFF`}
                             color="error"
                             size="small"
                             className="discount-chip"
@@ -119,7 +119,7 @@ export default function PackageDetail() {
                             variant="contained"
                             className="price-cta"
                         >
-                            Ver fechas y precios
+                            Ver fechas
                         </Button>
                     </Box>
                 </div>
@@ -141,7 +141,7 @@ export default function PackageDetail() {
                 <Tab label="Descripción" onClick={() => handleTabClick("section-description")} />
                 <Tab label="Itinerario" onClick={() => handleTabClick("section-itinerary")} />
                 <Tab label="Inclusiones" onClick={() => handleTabClick("section-inclusions")} />
-                <Tab label="Fechas y precios" onClick={() => handleTabClick("section-dates")} />
+                <Tab label="Fechas" onClick={() => handleTabClick("section-dates")} />
             </Tabs>
 
             <Box id="section-description" className="tab-section">
@@ -162,8 +162,8 @@ export default function PackageDetail() {
             </Box>
 
             <Box id="section-dates" className="tab-section">
-                <h2>Fechas y precios</h2>
-                <DatesPricesSection dates={packageData.datesAndPrices} />
+                <h2>Fechas</h2>
+                <DatesPricesSection dates={packageData.availability} />
             </Box>
 
         </Container>
