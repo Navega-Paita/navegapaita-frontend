@@ -83,7 +83,7 @@ export default function PackageDetail() {
             </Box>
 
             <div className="package-detail-layout">
-                <div className="package-main">
+                <div className="package-main" style={{ width: '100%', minWidth: 0 }}>
                     <Gallery images={packageData.imageGallery} />
                 </div>
 
@@ -109,7 +109,10 @@ export default function PackageDetail() {
 
                         <Box className="price-info">
                             <Typography><strong>Duración:</strong> {mockPackage.duration}</Typography>
-                            <Typography><strong>Destinos:</strong> {mockPackage.destinations.join(", ")}</Typography>
+                            {/* Ajuste: sx para que el texto no rompa el contenedor */}
+                            <Typography sx={{ wordBreak: 'break-word' }}>
+                                <strong>Destinos:</strong> {mockPackage.destinations.join(", ")}
+                            </Typography>
                             <Typography><strong>Edad mínima:</strong> {mockPackage.minAge} años</Typography>
                             <Typography><strong>Grupo:</strong> máx. {mockPackage.groupSize} personas</Typography>
                         </Box>

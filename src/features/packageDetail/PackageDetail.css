@@ -198,10 +198,20 @@
     }
     .package-detail-layout {
         grid-template-columns: 1fr;
+        gap: 20px; /* Reducimos el gap para ganar espacio */
+        width: 100%;
+        padding: 0 16px; /* Asegura un pequeño respiro a los lados */
     }
 
     .package-sidebar {
         position: static;
+        width: 100% !important; /* Forzamos que use todo el ancho disponible */
+        margin-top: 0;
+    }
+
+    .price-card {
         width: 100%;
+        margin: 0 auto; /* Centra la tarjeta si el contenedor es más ancho */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Sombra más ligera para móvil */
     }
 }
