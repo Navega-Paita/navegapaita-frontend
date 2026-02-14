@@ -62,6 +62,10 @@ export default function PackageCreatePage() {
     const [itineraries, setItineraries] = useState<ItineraryItem[]>([]);
     const [availability, setAvailability] = useState<AvailabilityItem[]>([]);
 
+    // Inputs temporales para actividades por índice de itinerario
+    const [tempIncluded, setTempIncluded] = useState<{ [index: number]: string }>({});
+    const [tempOptional, setTempOptional] = useState<{ [index: number]: string }>({});
+
     // 3. Imágenes
     const [croppedImages, setCroppedImages] = useState<Blob[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
@@ -104,6 +108,30 @@ export default function PackageCreatePage() {
         const newErrors = { ...itineraryErrors };
         delete newErrors[index];
         setItineraryErrors(newErrors);
+    };
+
+    const addActivity = (
+        itineraryIndex: number,
+        type: 'includedActivities' | 'optionalActivities',
+        tempState: { [index: number]: string },
+        setTempState: React.Dispatch<React.SetStateAction<{ [index: number]: string }>>
+    ) => {
+        const value = (tempState[itineraryIndex] || '').trim();
+        if (!value) return;
+        const updated = [...itineraries];
+        updated[itineraryIndex][type] = [...updated[itineraryIndex][type], value];
+        setItineraries(updated);
+        setTempState(prev => ({ ...prev, [itineraryIndex]: '' }));
+    };
+
+    const removeActivity = (
+        itineraryIndex: number,
+        type: 'includedActivities' | 'optionalActivities',
+        activityIndex: number
+    ) => {
+        const updated = [...itineraries];
+        updated[itineraryIndex][type] = updated[itineraryIndex][type].filter((_, i) => i !== activityIndex);
+        setItineraries(updated);
     };
 
     // ─── Handlers: Disponibilidad ──────────────────────────────────────────
@@ -444,10 +472,12 @@ export default function PackageCreatePage() {
                                         sx={{
                                             p: 2, mb: 2,
                                             border: (itineraryErrors[index]) ? '1px solid #d32f2f' : '1px solid #eee',
-                                            borderRadius: 2
+                                            borderRadius: 2,
+                                            bgcolor: '#f9f9f9'
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                        {/* Header del item */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                                             <Typography variant="subtitle1" fontWeight={600}>
                                                 Elemento #{index + 1}
                                             </Typography>
@@ -455,6 +485,8 @@ export default function PackageCreatePage() {
                                                 <Delete />
                                             </IconButton>
                                         </Box>
+
+                                        {/* Título y descripción */}
                                         <TextField
                                             fullWidth
                                             label="Título del hito"
@@ -469,11 +501,94 @@ export default function PackageCreatePage() {
                                             fullWidth multiline rows={2}
                                             label="Descripción de actividades"
                                             size="small"
+                                            sx={{ mb: 2 }}
                                             value={item.description}
                                             onChange={e => updateItinerary(index, 'description', e.target.value)}
                                             error={!!itineraryErrors[index]?.description}
                                             helperText={itineraryErrors[index]?.description}
                                         />
+
+                                        {/* Actividades Incluidas */}
+                                        <Box sx={{ mb: 2 }}>
+                                            <Typography variant="caption" fontWeight={600} sx={{ color: '#2e7d32', display: 'block', mb: 0.75 }}>
+                                                ✓ Actividades incluidas <Typography component="span" variant="caption" color="text.secondary">(opcional)</Typography>
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                                <TextField
+                                                    size="small"
+                                                    fullWidth
+                                                    placeholder="Ej: City tour guiado"
+                                                    value={tempIncluded[index] || ''}
+                                                    onChange={e => setTempIncluded(prev => ({ ...prev, [index]: e.target.value }))}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addActivity(index, 'includedActivities', tempIncluded, setTempIncluded);
+                                                        }
+                                                    }}
+                                                />
+                                                <Button
+                                                    variant="outlined"
+                                                    color="success"
+                                                    onClick={() => addActivity(index, 'includedActivities', tempIncluded, setTempIncluded)}
+                                                    sx={{ minWidth: 40, px: 1 }}
+                                                >
+                                                    <Add />
+                                                </Button>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                                                {item.includedActivities.map((act, actIdx) => (
+                                                    <Box key={actIdx} className="tag-item tag-included">
+                                                        {act}
+                                                        <Delete
+                                                            sx={{ fontSize: 14, cursor: 'pointer' }}
+                                                            onClick={() => removeActivity(index, 'includedActivities', actIdx)}
+                                                        />
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
+
+                                        {/* Actividades Opcionales */}
+                                        <Box>
+                                            <Typography variant="caption" fontWeight={600} sx={{ color: '#e65100', display: 'block', mb: 0.75 }}>
+                                                + Actividades opcionales <Typography component="span" variant="caption" color="text.secondary">(opcional)</Typography>
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                                <TextField
+                                                    size="small"
+                                                    fullWidth
+                                                    placeholder="Ej: Kayak - USD40"
+                                                    value={tempOptional[index] || ''}
+                                                    onChange={e => setTempOptional(prev => ({ ...prev, [index]: e.target.value }))}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addActivity(index, 'optionalActivities', tempOptional, setTempOptional);
+                                                        }
+                                                    }}
+                                                />
+                                                <Button
+                                                    variant="outlined"
+                                                    color="warning"
+                                                    onClick={() => addActivity(index, 'optionalActivities', tempOptional, setTempOptional)}
+                                                    sx={{ minWidth: 40, px: 1 }}
+                                                >
+                                                    <Add />
+                                                </Button>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                                                {item.optionalActivities.map((act, actIdx) => (
+                                                    <Box key={actIdx} className="tag-item tag-optional">
+                                                        {act}
+                                                        <Delete
+                                                            sx={{ fontSize: 14, cursor: 'pointer' }}
+                                                            onClick={() => removeActivity(index, 'optionalActivities', actIdx)}
+                                                        />
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
                                     </Box>
                                 ))
                             )}

@@ -24,6 +24,36 @@
     color: #ff2828;
 }
 
+/* Variante verde para actividades incluidas */
+.tag-item.tag-included {
+    background: #f1f8f1;
+    border-color: #c8e6c9;
+    color: #2e7d32;
+}
+
+.tag-item.tag-included svg {
+    color: #81c784;
+}
+
+.tag-item.tag-included svg:hover {
+    color: #c62828;
+}
+
+/* Variante naranja para actividades opcionales */
+.tag-item.tag-optional {
+    background: #fff8f1;
+    border-color: #ffe0b2;
+    color: #e65100;
+}
+
+.tag-item.tag-optional svg {
+    color: #ffb74d;
+}
+
+.tag-item.tag-optional svg:hover {
+    color: #c62828;
+}
+
 /* Efecto Sticky para la columna de precios */
 @media (min-width: 900px) {
     .MuiGrid-item:last-child {
