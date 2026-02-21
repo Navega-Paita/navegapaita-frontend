@@ -119,7 +119,7 @@ export default function SearchBar() {
                                 disableUnderline: true,
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <LocationIcon sx={{ color: '#ff2828', mr: 1 }} />
+                                        <LocationIcon sx={{ color: '#005b9e', mr: 1 }} />
                                     </InputAdornment>
                                 ),
                                 endAdornment: searchQuery && (
@@ -241,7 +241,7 @@ export default function SearchBar() {
                     className="search-button-mobile"
                     startIcon={<SearchIcon />}
                     sx={{
-                        backgroundColor: '#ff2828',
+                        backgroundColor: '#005b9e',
                         color: 'white',
                         borderRadius: '30px',
                         padding: '10px 28px',
@@ -249,7 +249,7 @@ export default function SearchBar() {
                         fontSize: '15px',
                         fontWeight: 700,
                         boxShadow: 'none',
-                        '&:hover': { backgroundColor: '#e02020' }
+                        '&:hover': { backgroundColor: '#005b9e' }
                     }}
                 >
                     Buscar

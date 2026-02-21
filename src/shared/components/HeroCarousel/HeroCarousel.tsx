@@ -98,14 +98,14 @@ export default function HeroCarousel() {
                 <Button
                     variant="contained"
                     sx={{
-                        backgroundColor: '#ff2828',
+                        backgroundColor: '#005b9e',
                         color: 'white',
                         borderRadius: '8px',
                         px: 4,
                         py: 1.5,
                         textTransform: 'none',
                         fontWeight: 700,
-                        '&:hover': { backgroundColor: '#cc0000' }
+                        '&:hover': { backgroundColor: '#005b9e' }
                     }}
                 >
                     {slide.subtitle}

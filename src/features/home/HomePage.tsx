@@ -224,7 +224,7 @@ export default function HomePage() {
                                 fontWeight: 600
                             },
                             '& .MuiTabs-indicator': {
-                                backgroundColor: '#ff2828',
+                                backgroundColor: '#005b9e',
                                 height: 3
                             }
                         }}

@@ -52,18 +52,16 @@
 
 .gallery-thumbs img:hover {
     opacity: 1;
-    border-color: #ff2828;
+    border-color: #005b9e;
 }
 
 @media (max-width: 768px) {
     .gallery-main {
         height: 260px;
-        /* IMPORTANTE: Redondear menos en móvil si se ve muy ajustado */
         border-radius: 12px;
     }
 
     .gallery-thumbs {
-        /* Asegura que las miniaturas no se compriman */
         flex-wrap: nowrap;
     }
 

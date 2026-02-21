@@ -70,7 +70,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                 >
                     {/* Renderizado condicional del icono basado en el estado */}
                     {isFavorite ? (
-                        <FavoriteIcon sx={{ color: '#ff1744' }} />
+                        <FavoriteIcon sx={{ color: '#005b9e' }} />
                     ) : (
                         <FavoriteBorderIcon sx={{ color: 'text.secondary' }} />
                     )}
@@ -111,7 +111,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                         </Typography>
                     )}
 
-                    <Typography sx={{ fontSize: '18px', fontWeight: 700, color: hasDiscount ? '#d32f2f' : 'text.primary' }}>
+                    <Typography sx={{ fontSize: '18px', fontWeight: 700, color: hasDiscount ? '#005b9e' : 'text.primary' }}>
                         USD ${experience.price.toLocaleString()}
                     </Typography>
                 </Box>

@@ -52,7 +52,7 @@
 .price-final {
     font-size: 28px;
     font-weight: 800;
-    color: #ff2828;
+    color: #005b9e;
 }
 
 .price-original {
@@ -74,13 +74,13 @@
 
 .price-cta {
     margin-top: 16px !important;
-    background-color: #ff2828 !important;
+    background-color: #005b9e !important;
     font-weight: 700 !important;
     border-radius: 10px !important;
 }
 
 .price-cta:hover {
-    background-color: #e02020 !important;
+    background-color: #005b9e !important;
 }
 
 

@@ -4,7 +4,7 @@ import { createTheme, type Theme } from '@mui/material/styles';
 const theme: Theme = createTheme({
     palette: {
         primary: {
-            main: '#ff2828', // Rojo Navega Paita
+            main: '#005b9e', // Rojo Navega Paita
             contrastText: '#ffffff',
         },
         secondary: {

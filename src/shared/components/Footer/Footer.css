@@ -1,6 +1,6 @@
 /* Footer.css */
 .footer-container {
-    background-color: #f9f9f9; /* Ajusta al color de tu secondary.main */
+    background-color: #f9f9f9;
     padding: 64px 0;
 }
 
@@ -11,19 +11,17 @@
 }
 
 .footer-column {
-    flex: 0 0 33.333%; /* 1/3 exacto */
+    flex: 0 0 33.333%;
     max-width: 33.333%;
     box-sizing: border-box;
 }
 
-/* Alineación de la columna central */
 .col-center {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-/* Alineación de la columna derecha */
 .col-right {
     display: flex;
     flex-direction: column;
@@ -33,7 +31,7 @@
 /* Estilos de Texto */
 .logo-text {
     font-weight: 800;
-    color: #ff0000; /* Ajusta al color de tu primary.main */
+    color: #005b9e;
     margin-bottom: 16px;
     line-height: 1.1;
     text-transform: uppercase;
@@ -62,10 +60,9 @@
 }
 
 .link-item:hover {
-    color: #ff0000 !important;
+    color: #005b9e !important;
 }
 
-/* Redes Sociales */
 .social-group {
     display: flex;
     gap: 16px;
@@ -78,27 +75,23 @@
 }
 
 .social-icon-btn:hover {
-    color: #ff0000 !important;
-    border-color: #ff0000 !important;
+    color: #005b9e !important;
+    border-color: #005b9e !important;
     background-color: transparent !important;
 }
 
-/* Barra inferior */
 .copyright-bar {
-    background-color: #ff0000;
+    background-color: #005b9e;
     padding: 16px 0;
     text-align: center;
     color: white;
 }
 
-/* Responsividad para móviles */
-/* Responsividad para móviles */
 @media (max-width: 900px) {
     .footer-column {
         flex: 0 0 100%;
         max-width: 100%;
         margin-bottom: 32px;
-        /* Esto centra los hijos directos (como el div interno de Información) */
         display: flex;
         flex-direction: column;
         align-items: center !important;
@@ -112,15 +105,13 @@
     }
 
     .description-text {
-        /* ELIMINADO: width 500% y text-align right */
         text-align: center;
         width: 100%;
-        max-width: 300px; /* Para que no se vea muy estirado en tablets */
+        max-width: 300px;
         margin-left: auto;
         margin-right: auto;
     }
 
-    /* Forzamos que los contenedores internos de Información y Síguenos también se centren */
     .col-center, .col-right {
         align-items: center !important;
     }
