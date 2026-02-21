@@ -2,6 +2,9 @@ import { useState, type MouseEvent } from 'react';
 import { Box, Button, IconButton, Typography } from '@mui/material';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
 import './HeroCarousel.css';
+import banner1 from '../../../assets/imgs/banner-1.png';
+import banner2 from '../../../assets/imgs/banner-2.png';
+import banner3 from '../../../assets/imgs/banner-3.png';
 
 // 1. Definimos el modelo del Slide
 interface HeroSlide {
@@ -19,24 +22,24 @@ interface HeroSlide {
 const HERO_SLIDES: HeroSlide[] = [
     {
         id: 1,
-        title: 'Nuevas Experiencias',
-        subtitle: 'Explora nuevas experiencias',
-        image: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200&h=400&fit=crop',
-        badge: { text: 'hasta 20% OFF', subtext: 'viajes seleccionados' }
+        title: 'Vive Paita a través de sus pescadores',
+        subtitle: 'Descubre la esencia del puerto más histórico del Perú',
+        image: banner1,
+        badge: { text: 'Puerto Histórico', subtext: 'Tradición y Mar' }
     },
     {
         id: 2,
-        title: 'Promoción Año Nuevo',
-        subtitle: 'Explora viajes en oferta',
-        image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&h=400&fit=crop',
-        badge: { text: 'hasta 20% OFF', subtext: 'viajes seleccionados' }
+        title: 'Aventuras en Paita',
+        subtitle: 'Explora caletas escondidas y playas de ensueño',
+        image: banner2,
+        badge: { text: 'Verano 2026', subtext: 'Paita te espera' }
     },
     {
         id: 3,
-        title: 'Aventuras en Paita',
-        subtitle: 'Explora viajes en oferta',
-        image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1200&h=400&fit=crop',
-        badge: { text: 'hasta 20% OFF', subtext: 'viajes seleccionados' }
+        title: 'Gastronomía y Tradición',
+        subtitle: 'Saborea el mar en cada experiencia compartida',
+        image: banner3,
+        badge: { text: '100% Auténtico', subtext: 'Manos locales' }
     }
 ];
 
@@ -63,27 +66,6 @@ export default function HeroCarousel() {
         >
             <div className="hero-overlay" />
 
-            {/* Badge de descuento */}
-            <Box className="hero-badge">
-                <Typography sx={{ fontSize: '12px', fontWeight: 800, color: '#000' }}>
-                    {slide.badge.text}
-                </Typography>
-                <Typography sx={{ fontSize: '24px', fontWeight: 900, color: '#000', lineHeight: 1 }}>
-                    20%
-                </Typography>
-                <Typography sx={{
-                    fontSize: '9px',
-                    fontWeight: 700,
-                    color: '#fff',
-                    bgcolor: '#000',
-                    px: 1,
-                    borderRadius: '4px',
-                    mt: 0.5
-                }}>
-                    {slide.badge.subtext}
-                </Typography>
-            </Box>
-
             {/* Contenido del slide */}
             <Box className="hero-content">
                 <Typography variant="h2" className="hero-title" sx={{
@@ -98,14 +80,13 @@ export default function HeroCarousel() {
                 <Button
                     variant="contained"
                     sx={{
-                        backgroundColor: '#005b9e',
-                        color: 'white',
+                        backgroundColor: 'white',
+                        color: '#005b9e',
                         borderRadius: '8px',
                         px: 4,
                         py: 1.5,
                         textTransform: 'none',
                         fontWeight: 700,
-                        '&:hover': { backgroundColor: '#005b9e' }
                     }}
                 >
                     {slide.subtitle}

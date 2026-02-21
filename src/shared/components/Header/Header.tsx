@@ -110,8 +110,8 @@ export default function Header() {
 
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => { navigate('/destinos'); setDrawerOpen(false); }}>
-                        <ListItemText primary="Destinos" />
+                    <ListItemButton onClick={() => { navigate('/experiencias'); setDrawerOpen(false); }}>
+                        <ListItemText primary="Experiencias" />
                         <ChevronRight />
                     </ListItemButton>
                 </ListItem>
@@ -185,10 +185,10 @@ export default function Header() {
                             <Box sx={{ display: 'flex', gap: 3, flexGrow: 1 }}>
                                 <Typography
                                     component={Link}
-                                    to="/destinos"
+                                    to="/experiencias"
                                     sx={{ fontWeight: 500, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
                                 >
-                                    Destinos
+                                    Experiencias
                                 </Typography>
                                 <Typography
                                     component={Link}

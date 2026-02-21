@@ -35,7 +35,7 @@
 }
 
 .feature-custom-icon {
-    width: 48px; /* Ajustado para que se vea más pequeño y elegante */
+    width: 48px;
     height: 48px;
     object-fit: contain;
     margin-bottom: 24px;
@@ -67,6 +67,62 @@
     border-radius: 12px;
 }
 
+/* ── Misión y Visión ── */
+.mission-vision-section {
+    margin-bottom: 80px;
+}
+
+.mission-vision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.mission-card,
+.vision-card {
+    padding: 48px 40px;
+    border-radius: 16px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mission-card {
+    background: linear-gradient(135deg, #e8f4fd 0%, #d0eaf8 100%);
+    border: 1px solid #b8ddf5;
+}
+
+.vision-card {
+    background: linear-gradient(135deg, #e8f8f0 0%, #c8eedd 100%);
+    border: 1px solid #a8dfc5;
+}
+
+.mission-card:hover,
+.vision-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+}
+
+.mv-icon-wrapper {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px auto;
+}
+
+.mission-icon {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.vision-icon {
+    background-color: #0d9e58;
+    color: white;
+}
+
+/* ── Banner de Propósito ── */
 .purpose-banner {
     background-color: #f8f9fa;
     border-radius: 16px;
@@ -77,16 +133,14 @@
     margin-bottom: 60px;
 }
 
-
-
-/* Responsividad para Tablets y Celulares */
+/* ── Responsividad ── */
 @media (max-width: 900px) {
     .about-grid-features {
-        grid-template-columns: 1fr; /* Una columna en móvil */
+        grid-template-columns: 1fr;
     }
 
     .about-section-split {
-        grid-template-columns: 1fr; /* Imagen arriba, texto abajo */
+        grid-template-columns: 1fr;
     }
 
     .about-hero-img {
@@ -97,5 +151,14 @@
         flex-direction: column;
         text-align: center;
         gap: 20px;
+    }
+
+    .mission-vision-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mission-card,
+    .vision-card {
+        padding: 36px 24px;
     }
 }
