@@ -1,4 +1,4 @@
-import {useState, useRef, type SyntheticEvent} from 'react';
+import { useState, useRef, useEffect, type SyntheticEvent } from 'react';
 import {
     Box,
     Container,
@@ -6,7 +6,8 @@ import {
     Tabs,
     Tab,
     Button,
-    IconButton
+    IconButton,
+    CircularProgress
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
@@ -18,29 +19,9 @@ import SearchBar from '../../shared/components/SearchBar/SearchBar.tsx';
 import HeroCarousel from '../../shared/components/HeroCarousel/HeroCarousel.tsx';
 import ExperienceCard from '../../shared/components/ExperienceCard/ExperienceCard.tsx';
 import './HomePage.css';
-import type { Experience } from "../../shared/models/experience";
-import {useNavigate} from "react-router-dom";
-
-
-const EXPERIENCES: Record<string, Experience[]> = {
-    unique: [
-        { id: '1', title: 'Paseo en bote tradicional por la bahía', duration: '4 horas', isFavorite: false, price: 45, originalPrice: 60, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop', tag: 'Popular' },
-        { id: '2', title: 'Taller de elaboración de ceviche', duration: '3 horas', isFavorite: false, price: 35, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop' },
-        { id: '3', title: 'Tour artesanal con pescadores locales', duration: '5 horas', isFavorite: false, price: 55, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop' },
-        { id: '4', title: 'Experiencia gastronómica frente al mar', duration: '2.5 horas', isFavorite: false, price: 40, image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop' },
-        { id: '5', title: 'Pesca artesanal al amanecer', duration: '6 horas', price: 65, isFavorite: false, originalPrice: 80, image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop' },
-    ],
-    new: [
-        { id: '11', title: 'Experiencia de buceo en arrecifes', duration: '5 horas', isFavorite: false, price: 85, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop', tag: 'Nuevo' },
-        { id: '12', title: 'Taller de nudos marineros', duration: '2 horas', isFavorite: false, price: 25, image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', tag: 'Nuevo' },
-    ],
-    popular: [
-        { id: '21', title: 'Full day: Playas del norte', duration: '8 horas', isFavorite: false, price: 78, originalPrice: 95, image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop', tag: 'Bestseller' },
-    ],
-    marine: [
-        { id: '31', title: 'Observación de delfines', duration: '5 horas', isFavorite: false, price: 72, image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=300&fit=crop' },
-    ]
-};
+import { useNavigate } from "react-router-dom";
+import { packageService} from "../../core/services/package.service.ts";
+import type { PackageCardDto} from "../../shared/dtos/package-card.dto.ts";
 
 interface Feature {
     icon: string;
@@ -56,13 +37,12 @@ const FEATURES: Feature[] = [
 ];
 
 interface ExperienceCarouselProps {
-    experiences: Experience[];
+    experiences: PackageCardDto[];
 }
 
-export function ExperienceCarousel({ experiences }: ExperienceCarouselProps){
+export function ExperienceCarousel({ experiences }: ExperienceCarouselProps) {
     const carouselRef = useRef<HTMLDivElement | null>(null);
 
-    // Tipamos la dirección como una unión de strings literales para mayor seguridad
     const scroll = (direction: 'left' | 'right'): void => {
         if (carouselRef.current) {
             const scrollAmount = direction === 'left' ? -300 : 300;
@@ -70,19 +50,24 @@ export function ExperienceCarousel({ experiences }: ExperienceCarouselProps){
         }
     };
 
+    if (experiences.length === 0) {
+        return (
+            <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Typography color="text.secondary">No hay experiencias disponibles en esta categoría.</Typography>
+            </Box>
+        );
+    }
+
     return (
         <Box className="carousel-container" sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            {/* Botón Izquierdo */}
             <IconButton
                 className="carousel-nav-button left"
                 onClick={() => scroll('left')}
-                aria-label="Anterior"
                 sx={{ position: 'absolute', left: -20, zIndex: 2, bgcolor: 'background.paper', boxShadow: 2 }}
             >
                 <ChevronLeftIcon />
             </IconButton>
 
-            {/* El wrapper que contiene los items */}
             <Box
                 className="carousel-wrapper"
                 ref={carouselRef}
@@ -92,23 +77,22 @@ export function ExperienceCarousel({ experiences }: ExperienceCarouselProps){
                     scrollBehavior: 'smooth',
                     gap: 2,
                     p: 2,
-                    '&::-webkit-scrollbar': { display: 'none' }, // Oculta scrollbar en Chrome/Safari
-                    msOverflowStyle: 'none', // Oculta en IE/Edge
-                    scrollbarWidth: 'none'   // Oculta en Firefox
+                    '&::-webkit-scrollbar': { display: 'none' },
+                    msOverflowStyle: 'none',
+                    scrollbarWidth: 'none'
                 }}
             >
-                {experiences.map((experience) => (
-                    <Box key={experience.id} className="carousel-item" sx={{ minWidth: { xs: '280px', md: '320px' } }}>
-                        <ExperienceCard experience={experience} />
+                {experiences.map((pkg) => (
+                    <Box key={pkg.id} sx={{ minWidth: { xs: '280px', md: '320px' } }}>
+                        {/* Pasamos el DTO al componente Card */}
+                        <ExperienceCard experience={pkg} />
                     </Box>
                 ))}
             </Box>
 
-            {/* Botón Derecho */}
             <IconButton
                 className="carousel-nav-button right"
                 onClick={() => scroll('right')}
-                aria-label="Siguiente"
                 sx={{ position: 'absolute', right: -20, zIndex: 2, bgcolor: 'background.paper', boxShadow: 2 }}
             >
                 <ChevronRightIcon />
@@ -119,36 +103,65 @@ export function ExperienceCarousel({ experiences }: ExperienceCarouselProps){
 
 export default function HomePage() {
     const [selectedTab, setSelectedTab] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [data, setData] = useState<{
+        uniqueExperiences: PackageCardDto[];
+        newExperiences: PackageCardDto[];
+        popularExperiences: PackageCardDto[];
+    }>({
+        uniqueExperiences: [],
+        newExperiences: [],
+        popularExperiences: []
+    });
+
     const navigate = useNavigate();
 
-    // Tipamos el cambio de tab siguiendo la firma de Material UI
+    // Carga de datos real del backend
+    useEffect(() => {
+        const fetchHomeData = async () => {
+            try {
+                setLoading(true);
+                // Si tienes el ID del usuario en un state global o localstorage, pásalo aquí
+                const userIdStr = localStorage.getItem('userId');
+                const userId = userIdStr ? parseInt(userIdStr) : undefined;
+
+                const response = await packageService.getHomePackages(userId);
+                setData(response);
+            } catch (error) {
+                console.error("Error cargando el Home:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHomeData();
+    }, []);
+
     const handleTabChange = (_event: SyntheticEvent, newValue: number): void => {
         setSelectedTab(newValue);
     };
 
     const handleExploreExperienceClick = (searchValue: string) => {
         const params = new URLSearchParams();
-
         params.set('page', '1');
-
         if (searchValue && searchValue.trim() !== "") {
             params.set('keyword', searchValue.trim());
         }
-
         navigate({
             pathname: '/buscar',
             search: `?${params.toString()}`
         });
     };
 
-    // Mapeo de tabs a secciones de experiencias
-    const tabExperiences = [
-        EXPERIENCES.unique,
-        EXPERIENCES.new,
-        EXPERIENCES.popular
-    ];
-
-    const currentExperiences = tabExperiences[selectedTab];
+    // Mapeo dinámico de las listas que vienen del backend
+    const getActiveList = (): PackageCardDto[] => {
+        switch (selectedTab) {
+            case 0: return data.uniqueExperiences;
+            case 1: return data.newExperiences;
+            case 2: return data.popularExperiences;
+            default: return [];
+        }
+    };
 
     return (
         <Box>
@@ -255,8 +268,14 @@ export default function HomePage() {
                     </Box>
                 </Box>
 
-                {/* Carrusel de experiencias */}
-                <ExperienceCarousel experiences={currentExperiences} />
+                {/* Renderizado condicional según carga */}
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <ExperienceCarousel experiences={getActiveList()} />
+                )}
 
                 <Box className="explore-button-container mobile-display">
                     <Button
@@ -274,60 +293,6 @@ export default function HomePage() {
                         }}
                     >
                         Explorar experiencias
-                    </Button>
-                </Box>
-
-            </Container>
-
-            {/* Section: Experiencias Marinas */}
-            <Container maxWidth="lg" sx={{ mb: 8 }}>
-
-                <Box className="tabs-container">
-                    <Typography className="section-title">
-                        <b>Experiencias Marinas</b>
-                    </Typography>
-                    <Box className="explore-button-container">
-                        <Button
-                            onClick={() => handleExploreExperienceClick("bote")}
-                            variant="outlined"
-                            sx={{
-                                borderRadius: '30px',
-                                padding: '8px 24px',
-                                textTransform: 'none',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                borderColor: 'text.primary',
-                                color: 'text.primary',
-                                '&:hover': {
-                                    borderColor: 'text.primary',
-                                    backgroundColor: 'rgba(0,0,0,0.04)'
-                                }
-                            }}
-                        >
-                            Explorar experiencias marinas
-                        </Button>
-                    </Box>
-
-                </Box>
-
-                <ExperienceCarousel experiences={EXPERIENCES.marine} />
-
-                <Box className="explore-button-container mobile-display">
-                    <Button
-                        variant="outlined"
-                        className="btn-explorar"
-                        sx={{
-                            borderRadius: '30px',
-                            padding: '8px 24px',
-                            textTransform: 'none',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            borderColor: 'text.primary',
-                            color: 'text.primary',
-                            whiteSpace: 'nowrap'
-                        }}
-                    >
-                        Explorar experiencias marinas
                     </Button>
                 </Box>
 

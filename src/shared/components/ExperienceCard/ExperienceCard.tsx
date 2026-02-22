@@ -3,22 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Box, Chip, IconButton } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import type { Experience } from "../../models/experience.ts";
+import type { PackageCardDto } from "../../dtos/package-card.dto.ts";
 
 interface ExperienceCardProps {
-    experience: Experience;
+    experience: PackageCardDto;
 }
 
 export default function ExperienceCard({ experience }: ExperienceCardProps) {
     const navigate = useNavigate();
     const [isFavorite, setIsFavorite] = useState(experience.isFavorite);
 
-    const hasDiscount = !!(experience.originalPrice && experience.originalPrice > experience.price);
+    const hasDiscount = experience.discount > 0;
 
     // Manejador para la Card (Navegación)
     const handleCardClick = () => {
-        // Redirigimos a la ruta especificada
-        navigate(`/buscar/peru`);
+        // Usamos el slug dinámico del paquete
+        navigate(`/buscar/${experience.slug}`);
     };
 
     // Manejador para Favoritos (Evita la navegación)
@@ -50,7 +50,7 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                 <CardMedia
                     component="img"
                     height="200"
-                    image={experience.image}
+                    image={experience.mainImage}
                     alt={experience.title}
                     sx={{ width: '100%', objectFit: 'cover' }}
                 />
@@ -75,22 +75,6 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                         <FavoriteBorderIcon sx={{ color: 'text.secondary' }} />
                     )}
                 </IconButton>
-
-                {experience.tag && (
-                    <Chip
-                        label={experience.tag}
-                        size="small"
-                        sx={{
-                            position: 'absolute',
-                            top: 12,
-                            left: 12,
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            color: 'white',
-                            fontWeight: 600,
-                            fontSize: '11px'
-                        }}
-                    />
-                )}
             </Box>
 
             <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2.5, backgroundColor: '#ffffff' }}>
@@ -105,9 +89,16 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography sx={{ fontSize: '13px', color: 'text.secondary', mr: 0.5 }}>Desde</Typography>
 
-                    {hasDiscount && experience.originalPrice && (
-                        <Typography sx={{ fontSize: '14px', color: 'text.secondary', textDecoration: 'line-through', fontWeight: 500 }}>
-                            USD ${experience.originalPrice.toLocaleString()}
+                    {hasDiscount && (
+                        <Typography
+                            sx={{
+                                fontSize: '14px',
+                                color: 'text.secondary',
+                                textDecoration: 'line-through',
+                                fontWeight: 500
+                            }}
+                        >
+                            USD ${experience.price.toLocaleString()}
                         </Typography>
                     )}
 
