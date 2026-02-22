@@ -28,6 +28,7 @@ import {
     ChevronRight,
     Close,
 } from '@mui/icons-material';
+import {useAuth} from "../../../core/context/AuthContext.tsx";
 
 // Styled Components tipados (heredan tipos de MUI automáticamente)
 const Search = styled('div')(({ theme }) => ({
@@ -75,6 +76,10 @@ export default function Header() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
+    const { isAuthenticated, user } = useAuth();
+    const accountPath = isAuthenticated
+        ? (user?.role === 'FISHERMAN' ? '/profile' : '/perfil')
+        : '/login';
 
     // Estados tipados por inferencia
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -128,7 +133,11 @@ export default function Header() {
             <List>
                 {[
                     { text: 'Lista de deseo', icon: <FavoriteBorder />, path: '/wishlist' },
-                    { text: 'Mi Perfil', icon: <AccountCircle />, path: '/perfil' },
+                    {
+                        text: isAuthenticated ? 'Mi Perfil' : 'Iniciar Sesión',
+                        icon: <AccountCircle />,
+                        path: accountPath
+                    },
                     { text: 'Contactanos', icon: <Phone />, path: '/contacto' },
                 ].map((item) => (
                     <ListItem key={item.text} disablePadding>
@@ -214,7 +223,11 @@ export default function Header() {
                                 <IconButton component={Link} to={"/wishlist"} sx={{ color: 'text.primary' }}>
                                     <FavoriteBorder />
                                 </IconButton>
-                                <IconButton component={Link} to={"/login"} sx={{ color: 'text.primary' }}>
+                                <IconButton
+                                    component={Link}
+                                    to={accountPath} // <--- Ruta dinámica
+                                    sx={{ color: 'text.primary' }}
+                                >
                                     <AccountCircle />
                                 </IconButton>
                                 <IconButton component={Link} to={"/contacto"} sx={{ color: 'text.primary' }}>

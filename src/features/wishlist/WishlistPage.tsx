@@ -41,7 +41,15 @@ export default function WishlistPage() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg"
+                   sx={{
+                       py: 4,
+                       // 1. Calculamos el alto: 100vh menos la altura estimada del Header y Footer
+                       // Ajusta los 200px según el tamaño de tu Navbar + Footer
+                       minHeight: 'calc(100vh - 200px)',
+                       display: 'flex',
+                       flexDirection: 'column'
+                   }}>
             {/* 1. Breadcrumb - Intacto */}
             <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 4, fontSize: '0.85rem' }}>
                 <Link underline="hover" color="inherit" href="/">Home</Link>

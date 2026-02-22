@@ -17,6 +17,8 @@ import RegisterPage from "./features/authentication/RegisterPage.tsx";
 import { RoleGuard } from './core/guards/RoleGuard';
 import DashboardLayout from "./shared/layouts/DashboardLayout.tsx";
 import MainLayout from "./shared/layouts/MainLayout.tsx";
+import {PublicRoute} from "./core/guards/PublicRoute.tsx";
+import ProfilePage from "./features/profile/profilePage.tsx";
 
 export default function AppRoutes() {
     return (
@@ -34,15 +36,17 @@ export default function AppRoutes() {
                 {/* Solo accesible si estás logueado como CUSTOMER */}
                 <Route element={<RoleGuard allowedRoles={['CUSTOMER']} />}>
                     <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route path="/perfil" element={<HomePage />} /> {/* O tu vista de perfil */}
+                    <Route path="/perfil" element={<ProfilePage />} />
                 </Route>
             </Route>
 
             {/* ==========================================================
                 GRUPO 2: RUTAS DE AUTENTICACIÓN (Sin Layout o Layout simple)
                ========================================================== */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/registro" element={<RegisterPage />} />
+            <Route element={<PublicRoute />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/registro" element={<RegisterPage />} />
+            </Route>
 
             {/* ==========================================================
                 GRUPO 3: DASHBOARD ADMINISTRATIVO (Admin y Agency)
@@ -69,7 +73,7 @@ export default function AppRoutes() {
                ========================================================== */}
             <Route element={<RoleGuard allowedRoles={['FISHERMAN']} />}>
                 {/* Aquí puedes crear un FishermanLayout si es distinto */}
-                <Route path="/profile" element={<div>Perfil del Pescador</div>} />
+                <Route path="/perfil" element={<div>Perfil del Pescador</div>} />
             </Route>
 
             {/* Fallback para rutas no encontradas */}

@@ -9,12 +9,19 @@ interface RoleGuardProps {
 export const RoleGuard = ({ allowedRoles }: RoleGuardProps) => {
     const { user, isAuthenticated } = useAuth();
 
-    if (!isAuthenticated) return <Navigate to="/login" replace />;
-
-    if (!allowedRoles.includes(user.role)) {
-        // Si intenta entrar a donde no debe, lo mandamos a su "casa"
-        return <Navigate to={user.role === 'CUSTOMER' ? '/' : '/profile'} replace />;
+    // 1. Si no está autenticado, al login
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
     }
 
-    return <Outlet />; // Renderiza las rutas hijas si tiene permiso
+    // 2. Si el usuario aún no carga (prevención de undefined)
+    if (!user) return null;
+
+    // 3. Verificación de roles
+    if (!allowedRoles.includes(user.role)) {
+        const redirectPath = user.role === 'CUSTOMER' ? '/' : '/profile';
+        return <Navigate to={redirectPath} replace />;
+    }
+
+    return <Outlet />;
 };
