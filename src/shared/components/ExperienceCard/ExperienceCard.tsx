@@ -4,6 +4,7 @@ import { Card, CardContent, CardMedia, Typography, Box, Chip, IconButton } from 
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { PackageCardDto } from "../../dtos/package-card.dto.ts";
+import { packageService} from "../../../core/services/package.service.ts";
 
 interface ExperienceCardProps {
     experience: PackageCardDto;
@@ -22,10 +23,36 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
     };
 
     // Manejador para Favoritos (Evita la navegación)
-    const handleFavoriteClick = (e: React.MouseEvent) => {
+    const handleFavoriteClick = async (e: React.MouseEvent) => {
         e.stopPropagation();
+
+        // 1. Obtener el userId del localStorage
+        const storedUserId = localStorage.getItem('userId');
+
+        if (!storedUserId) {
+            // Opcional: Redirigir al login si no hay usuario
+            alert("Debes iniciar sesión para guardar favoritos");
+            navigate('/login');
+            return;
+        }
+
+        const userId = parseInt(storedUserId, 10);
+        const packageId = experience.id;
+
+        // Optimistic Update: Cambiamos la UI antes de que responda el server
+        const previousState = isFavorite;
         setIsFavorite(!isFavorite);
-        console.log(`Estado favorito de "${experience.title}":`, !isFavorite);
+
+        try {
+            const result = await packageService.toggleFavorite(userId, packageId);
+            // Sincronizamos con lo que diga el servidor por si acaso
+            setIsFavorite(result.isFavorite);
+            console.log(`Favorito actualizado en DB:`, result.isFavorite);
+        } catch (error) {
+            // Si falla, revertimos el cambio visual
+            setIsFavorite(previousState);
+            console.error("Error al guardar favorito:", error);
+        }
     };
 
     return (

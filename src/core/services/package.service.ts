@@ -93,6 +93,45 @@ export const packageService = {
         return await response.json();
     },
 
+    toggleFavorite: async (userId: number, packageId: number) => {
+        const response = await fetch(`${API_URL}/favorites`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, packageId }),
+        });
+
+        if (!response.ok) {
+            throw new Error('No se pudo actualizar el favorito');
+        }
+
+        return await response.json(); // Retorna { isFavorite: boolean }
+    },
+
+    getUserWishlist: async (userId: number): Promise<PackageCardDto[]> => {
+        const response = await fetch(`${API_URL}/favorites/user/${userId}`);
+
+        if (!response.ok) {
+            throw new Error('No se pudo cargar la lista de deseos');
+        }
+
+        const data = await response.json();
+
+        return data.map((fav: any) => {
+            const p = fav.package;
+            return {
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                mainImage: p.mainImage,
+                duration: p.duration,
+                price: p.price,
+                discount: p.discount || 0,
+                finalPrice: p.finalPrice || p.price,
+                isFavorite: true // Por definición, si está aquí, es favorito
+            } as PackageCardDto;
+        });
+    },
+
     deletePackage: async (packageId: number): Promise<void> => {
         const response = await fetch(`${API_URL}/packages/${packageId}`, {
             method: 'DELETE',

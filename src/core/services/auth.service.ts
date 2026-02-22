@@ -19,7 +19,7 @@ export const authService = {
         // Guardamos todo el objeto y el token por separado para fácil acceso
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('userId', data.user.id.toString()); // Útil para tus queries de paquetes
+        localStorage.setItem('userId', data.user.id.toString());
 
         return data;
     },

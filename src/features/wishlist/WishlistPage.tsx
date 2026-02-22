@@ -1,53 +1,76 @@
-import { Box, Container, Typography, Breadcrumbs, Link, Button } from '@mui/material';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
-import { mockWishlistApi} from "../search/ search.mock.ts";
 import ExperienceCard from '../../shared/components/ExperienceCard/ExperienceCard';
+import { useState, useEffect } from 'react';
+import { Box, Container, Typography, Breadcrumbs, Link, Button, CircularProgress } from '@mui/material';
+import { packageService } from "../../core/services/package.service.ts";
+import type {PackageCardDto} from "../../shared/dtos/package-card.dto.ts";
 
 export default function WishlistPage() {
-    const response = mockWishlistApi();
+    const [packages, setPackages] = useState<PackageCardDto[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchWishlist = async () => {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // Llamamos a tu función original (ahora corregida)
+                const data = await packageService.getUserWishlist(parseInt(userId));
+                setPackages(data);
+            } catch (error) {
+                console.error("Error:", error);
+                setPackages([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchWishlist();
+    }, []);
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            {/* 1. Breadcrumb */}
+            {/* 1. Breadcrumb - Intacto */}
             <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 4, fontSize: '0.85rem' }}>
-                <Link underline="hover" color="inherit" href="/">
-                    Home
-                </Link>
+                <Link underline="hover" color="inherit" href="/">Home</Link>
                 <Typography color="text.primary">Lista de deseos</Typography>
             </Breadcrumbs>
 
-            {/* 2. Título y Frase */}
+            {/* 2. Título y Frase - Intacto */}
             <Box sx={{ textAlign: 'center', mb: 6 }}>
-                <Typography variant="h3" sx={{ fontWeight: 600, mb: 2, fontFamily: 'Montserrat' }}>
+                <Typography variant="h3" sx={{ fontWeight: 600, mb: 2 }}>
                     Mi Lista de deseos
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    Empieza a crear tu lista de deseos
-                </Typography>
-                <Typography color="text.secondary">
-                    Explora viajes y añade tus favoritos para más tarde
-                </Typography>
+                {/* Corregido: Verificamos length sobre el array real */}
+                {packages.length === 0 ? (
+                    <Typography variant="h6" color="text.secondary">
+                        Tu lista está vacía. ¡Explora y añade experiencias!
+                    </Typography>
+                ) : (
+                    <>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                            Tienes {packages.length} experiencias guardadas
+                        </Typography>
+                        <Typography color="text.secondary">
+                            Añade tus favoritos para planear tu próximo viaje
+                        </Typography>
+                    </>
+                )}
             </Box>
 
-            {/* 3. Botón Remover */}
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-start' }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<DeleteSweepIcon />}
-                    sx={{
-                        textTransform: 'none',
-                        color: 'black',
-                        borderColor: 'black',
-                        fontWeight: 500,
-                        '&:hover': { borderColor: '#333', bgcolor: '#f5f5f5' }
-                    }}
-                    onClick={() => console.log("Remover todos los viajes")}
-                >
-                    Eliminar todos los viajes
-                </Button>
-            </Box>
-
-            {/* 4. Grid de Experiencias */}
+            {/* 4. Grid de Experiencias - Intacto */}
             <Box
                 sx={{
                     display: 'grid',
@@ -60,9 +83,10 @@ export default function WishlistPage() {
                     width: '100%'
                 }}
             >
-                {response.items.map(exp => (
+                {packages.map(exp => (
                     <Box key={exp.id} sx={{ width: '100%' }}>
-                        <ExperienceCard experience={exp} />
+                        {/* Pasamos isFavorite como true porque estamos en la wishlist */}
+                        <ExperienceCard experience={{...exp, isFavorite: true}}  />
                     </Box>
                 ))}
             </Box>
