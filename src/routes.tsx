@@ -18,7 +18,6 @@ export default function AppRoutes() {
         <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/sobre-paita" element={<AboutPage />} />
-            <Route path="/experiencias" element={<SearchPage />} />
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/perfil" element={<HomePage />} /> {/* Temporal */}

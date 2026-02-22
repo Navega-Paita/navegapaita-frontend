@@ -45,11 +45,18 @@ export const packageService = {
     },
 
     searchPackagesPaginated: async (params: SearchFilters, userId?: number): Promise<PaginatedResponse> => {
-        const queryParams = new URLSearchParams({
-            ...Object.entries(params).reduce((acc, [key, value]) => ({ ...acc, [key]: String(value) }), {}),
-            ...(userId && { userId: userId.toString() })
+        const cleanParams: Record<string, string> = {};
+
+        Object.entries(params).forEach(([key, value]) => {
+            // Solo incluimos valores que existan y NO sean el string "undefined"
+            if (value !== undefined && value !== null && value !== '' && value !== 'undefined') {
+                cleanParams[key] = String(value);
+            }
         });
 
+        if (userId) cleanParams.userId = userId.toString();
+
+        const queryParams = new URLSearchParams(cleanParams);
         const response = await fetch(`${API_URL}/packages/search?${queryParams.toString()}`);
 
         if (!response.ok) {

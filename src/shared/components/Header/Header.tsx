@@ -185,7 +185,7 @@ export default function Header() {
                             <Box sx={{ display: 'flex', gap: 3, flexGrow: 1 }}>
                                 <Typography
                                     component={Link}
-                                    to="/experiencias"
+                                    to="/buscar"
                                     sx={{ fontWeight: 500, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
                                 >
                                     Experiencias
