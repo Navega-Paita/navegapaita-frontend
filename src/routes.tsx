@@ -11,6 +11,8 @@ import { Dashboard } from './features/dashboard/Dashboard';
 import {ChatWindow} from "./features/chat/ChatWindow.tsx";
 import {VesselForm} from "./features/vessels/VesselForm.tsx";
 import PackageCreatePage from "./features/packages/PackageForm.tsx";
+import LoginPage from "./features/authentication/LoginPage.tsx";
+import RegisterPage from "./features/authentication/RegisterPage.tsx";
 
 
 export default function AppRoutes() {
@@ -20,8 +22,9 @@ export default function AppRoutes() {
             <Route path="/sobre-paita" element={<AboutPage />} />
             <Route path="/contacto" element={<ContactPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/perfil" element={<HomePage />} /> {/* Temporal */}
-            <Route path="/sobre-nosotros" element={<AboutPage />} />
+            <Route path="/perfil" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/registro" element={<RegisterPage />} />
             <Route path="/buscar/:slug" element={<PackageDetail />} />
             <Route path="/buscar" element={<SearchPage />} />
             <Route path="/dashboard" element={<Dashboard />} />

@@ -214,7 +214,7 @@ export default function Header() {
                                 <IconButton component={Link} to={"/wishlist"} sx={{ color: 'text.primary' }}>
                                     <FavoriteBorder />
                                 </IconButton>
-                                <IconButton component={Link} to={"/perfil"} sx={{ color: 'text.primary' }}>
+                                <IconButton component={Link} to={"/login"} sx={{ color: 'text.primary' }}>
                                     <AccountCircle />
                                 </IconButton>
                                 <IconButton component={Link} to={"/contacto"} sx={{ color: 'text.primary' }}>
