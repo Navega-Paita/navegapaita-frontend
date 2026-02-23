@@ -32,12 +32,8 @@ export default function AppRoutes() {
                 <Route path="/contacto" element={<ContactPage />} />
                 <Route path="/buscar" element={<SearchPage />} />
                 <Route path="/buscar/:slug" element={<PackageDetail />} />
-
-                {/* Solo accesible si estás logueado como CUSTOMER */}
-                <Route element={<RoleGuard allowedRoles={['CUSTOMER']} />}>
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route path="/perfil" element={<ProfilePage />} />
-                </Route>
+                <Route path="/wishlist" element={<WishlistPage />} />
+                <Route path="/perfil" element={<ProfilePage />} />
             </Route>
 
             {/* ==========================================================
@@ -51,7 +47,7 @@ export default function AppRoutes() {
             {/* ==========================================================
                 GRUPO 3: DASHBOARD ADMINISTRATIVO (Admin y Agency)
                ========================================================== */}
-            <Route element={<RoleGuard allowedRoles={['ADMIN', 'AGENCY']} />}>
+            <Route element={<RoleGuard allowedRoles={['ADMIN', 'OPERATOR']} />}>
                 <Route element={<DashboardLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/embarcaciones" element={<VesselForm />} />

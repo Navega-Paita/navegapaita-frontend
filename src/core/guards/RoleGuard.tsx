@@ -9,19 +9,30 @@ interface RoleGuardProps {
 export const RoleGuard = ({ allowedRoles }: RoleGuardProps) => {
     const { user, isAuthenticated } = useAuth();
 
-    // 1. Si no está autenticado, al login
+    // LOG DE DEBUG
+    console.log("--- DEBUG ROLE GUARD ---");
+    console.log("1. ¿Está autenticado?:", isAuthenticated);
+    console.log("2. Usuario en estado:", user);
+    console.log("3. Rol del usuario:", user?.role);
+    console.log("4. Roles permitidos para esta ruta:", allowedRoles);
+    console.log("5. ¿El rol está en la lista?:", allowedRoles.includes(user?.role));
+
     if (!isAuthenticated) {
+        console.warn("DEBUG: No autenticado, redirigiendo a login");
         return <Navigate to="/login" replace />;
     }
 
-    // 2. Si el usuario aún no carga (prevención de undefined)
-    if (!user) return null;
+    if (!user) {
+        console.warn("DEBUG: Esperando a que el usuario cargue...");
+        return null;
+    }
 
-    // 3. Verificación de roles
     if (!allowedRoles.includes(user.role)) {
+        console.error(`DEBUG: Acceso denegado. El rol ${user.role} no está en [${allowedRoles}]`);
         const redirectPath = user.role === 'CUSTOMER' ? '/' : '/profile';
         return <Navigate to={redirectPath} replace />;
     }
 
+    console.log("DEBUG: Acceso concedido ✅");
     return <Outlet />;
 };

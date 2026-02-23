@@ -8,7 +8,7 @@ export const PublicRoute = () => {
     if (isAuthenticated && user) {
         // Si ya está logueado, lo mandamos a su ruta según rol
         const role = user.role;
-        if (role === 'ADMIN' || role === 'AGENCY') return <Navigate to="/dashboard" replace />;
+        if (role === 'ADMIN' || role === 'OPERATOR') return <Navigate to="/dashboard" replace />;
         if (role === 'FISHERMAN') return <Navigate to="/profile" replace />;
         return <Navigate to="/" replace />;
     }

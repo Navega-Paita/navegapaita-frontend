@@ -20,7 +20,7 @@ export default function LoginPage() {
 
             // Redirección
             const role = data.user.role;
-            if (role === 'ADMIN' || role === 'AGENCY') {
+            if (role === 'ADMIN' || role === 'OPERATOR') {
                 navigate('/dashboard');
             } else {
                 navigate('/');
