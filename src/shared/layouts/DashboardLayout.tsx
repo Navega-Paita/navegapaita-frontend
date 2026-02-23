@@ -1,15 +1,14 @@
-import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 import Header from './../components/Header/Header.tsx';
 
 export default function DashboardLayout() {
     return (
-        <Box sx={{ display: 'flex' }}>
+        <div className="main-layout">
             <Header />
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <main>
                 <Outlet />
-            </Box>
-        </Box>
+            </main>
+        </div>
     );
 }

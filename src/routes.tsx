@@ -19,6 +19,8 @@ import DashboardLayout from "./shared/layouts/DashboardLayout.tsx";
 import MainLayout from "./shared/layouts/MainLayout.tsx";
 import {PublicRoute} from "./core/guards/PublicRoute.tsx";
 import ProfilePage from "./features/profile/profilePage.tsx";
+import UserManagementPage from "./features/UserManagement/UserManagementPage.tsx";
+import VesselsPage from "./features/vessels/VesselsPage.tsx";
 
 export default function AppRoutes() {
     return (
@@ -44,13 +46,20 @@ export default function AppRoutes() {
                 <Route path="/registro" element={<RegisterPage />} />
             </Route>
 
+            <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
+                <Route element={<DashboardLayout />}>
+                    <Route path="/usuarios" element={<UserManagementPage />} />
+                    {/* ... */}
+                </Route>
+            </Route>
+
             {/* ==========================================================
                 GRUPO 3: DASHBOARD ADMINISTRATIVO (Admin y Agency)
                ========================================================== */}
             <Route element={<RoleGuard allowedRoles={['ADMIN', 'OPERATOR']} />}>
                 <Route element={<DashboardLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/embarcaciones" element={<VesselForm />} />
+                    <Route path="/embarcaciones" element={<VesselsPage />} />
                     <Route path="/crear-paquete" element={<PackageCreatePage />} />
                     <Route path="/monitoreo" element={
                         <div style={{ padding: '20px' }}>

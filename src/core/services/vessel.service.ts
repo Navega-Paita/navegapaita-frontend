@@ -6,9 +6,6 @@ const API_URL = 'http://localhost:3000';
 
 export const vesselService = {
 
-    /**
-     * Registra la embarcación en nuestro Backend NestJS (RF2.1)
-     */
     createVessel: async (vesselData: CreateVesselDto): Promise<void> => {
         console.log("LOG [vesselService.createVessel]: Enviando a NestJS...", vesselData);
 
@@ -27,9 +24,6 @@ export const vesselService = {
         console.log("LOG [vesselService.createVessel]: Éxito en DB");
     },
 
-    /**
-     * Orquestador: Sube foto usando el servicio compartido y registra en DB
-     */
     registerVesselFull: async (data: CreateVesselDto, imageBlob: Blob | null): Promise<void> => {
         console.log("LOG [registerVesselFull]: Inicio de proceso");
 
@@ -78,5 +72,26 @@ export const vesselService = {
             const error = await response.json();
             throw new Error(error.message || 'No se pudo eliminar la embarcación');
         }
+    },
+
+    getAll: async () => {
+        const response = await fetch(`${API_URL}/vessels`);
+        if (!response.ok) throw new Error('Error al obtener embarcaciones');
+        return response.json();
+    },
+
+    updateStatus: async (id: number, status: string) => {
+        const response = await fetch(`${API_URL}/vessels/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        });
+        return response.json();
+    },
+
+    getOwners: async () => {
+        const response = await fetch(`${API_URL}/users/staff`); // Usamos el que ya tienes que filtra staff
+        const users = await response.json();
+        return users.filter((u: any) => u.role === 'FISHERMAN');
     }
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { vesselService} from "../../core/services/vessel.service.ts";
 import type { CreateVesselDto } from "../../shared/dtos/vessel.dto.ts";
 import { ImageCropper } from '../../shared/components/ImageCropper/ImageCropper.tsx';
@@ -12,12 +12,21 @@ const initialFormState: CreateVesselDto = {
     ownerId: 1,
 };
 
-export const VesselForm: React.FC = () => {
+interface VesselFormProps {
+    onSuccess?: () => void; // Prop opcional para avisar que terminó
+}
+
+export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess }) => {
     const [formData, setFormData] = useState<CreateVesselDto>(initialFormState);
     const [loading, setLoading] = useState(false);
     const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
     const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [owners, setOwners] = useState<any[]>([]);
+
+    useEffect(() => {
+        vesselService.getOwners().then(setOwners);
+    }, []);
 
     // Creamos una referencia para el input de archivo
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -60,7 +69,12 @@ export const VesselForm: React.FC = () => {
         try {
             await vesselService.registerVesselFull(formData, croppedBlob);
             alert("Embarcación registrada correctamente");
-            resetForm(); // Esto ahora sí funcionará porque los inputs están vinculados
+            resetForm();
+
+            // Si la prop existe, la ejecutamos
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             alert("Error al registrar");
             console.error(error);
@@ -76,6 +90,18 @@ export const VesselForm: React.FC = () => {
             <input type="text" placeholder="Tipo" required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} />
             <input type="number" placeholder="Capacidad" required value={formData.capacity || ''} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
             <textarea placeholder="Especificaciones" value={formData.technicalSpecs || ''} onChange={e => setFormData({...formData, technicalSpecs: e.target.value})} />
+
+            <select
+                required
+                value={formData.ownerId}
+                onChange={e => setFormData({...formData, ownerId: Number(e.target.value)})}
+                style={{ padding: '10px', borderRadius: '4px' }}
+            >
+                <option value="">Seleccione un dueño (Pescador)</option>
+                {owners.map(o => (
+                    <option key={o.id} value={o.id}>{o.firstName} {o.lastName}</option>
+                ))}
+            </select>
 
             <div style={{ border: '2px dashed #ccc', padding: '20px', textAlign: 'center' }}>
                 {previewUrl && (
