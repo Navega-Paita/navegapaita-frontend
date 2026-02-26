@@ -1,5 +1,7 @@
 // src/core/services/user.service.ts
 
+import type {UpdateUserDto} from "../../shared/dtos/update-user.dto.ts";
+
 export interface UserStaffDto {
     id: number;
     email: string;
@@ -29,6 +31,23 @@ class UserService {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
+    }
+
+    async updateUser(id: number, data: UpdateUserDto): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al actualizar el usuario');
+        }
+
+        console.log(`LOG: Usuario ${id} actualizado correctamente`);
     }
 
     // Aquí irían update y create...
