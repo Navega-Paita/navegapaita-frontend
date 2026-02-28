@@ -13,15 +13,23 @@ const initialFormState: CreateVesselDto = {
 };
 
 interface VesselFormProps {
-    onSuccess?: () => void; // Prop opcional para avisar que terminó
+    onSuccess?: () => void;
+    vesselToEdit?: any; // Añadimos esta prop
 }
 
-export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess }) => {
-    const [formData, setFormData] = useState<CreateVesselDto>(initialFormState);
+export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess, vesselToEdit }) => {
+    const [formData, setFormData] = useState<CreateVesselDto>(vesselToEdit ? {
+        name: vesselToEdit.name,
+        registrationNumber: vesselToEdit.registrationNumber,
+        type: vesselToEdit.type,
+        capacity: vesselToEdit.capacity,
+        technicalSpecs: vesselToEdit.technicalSpecs,
+        ownerId: vesselToEdit.owner?.id || 0,
+    } : initialFormState);
     const [loading, setLoading] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(vesselToEdit?.image?.url || null);
     const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
     const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [owners, setOwners] = useState<any[]>([]);
 
     useEffect(() => {
@@ -63,21 +71,21 @@ export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (tempImageSrc) return;
-
         setLoading(true);
         try {
-            await vesselService.registerVesselFull(formData, croppedBlob);
-            alert("Embarcación registrada correctamente");
-            resetForm();
-
-            // Si la prop existe, la ejecutamos
-            if (onSuccess) {
-                onSuccess();
+            if (vesselToEdit) {
+                // Lógica de Edición (Asumiendo que crearemos este método en el service)
+                await vesselService.updateVessel(vesselToEdit.id, formData);
+                alert("Actualizado correctamente");
+            } else {
+                // Lógica de Registro (Existente)
+                await vesselService.registerVesselFull(formData, croppedBlob);
+                alert("Registrado correctamente");
             }
+            if (onSuccess) onSuccess();
         } catch (error) {
-            alert("Error al registrar");
             console.error(error);
+            alert("Error en la operación");
         } finally {
             setLoading(false);
         }
@@ -126,8 +134,8 @@ export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess }) => {
                 />
             )}
 
-            <button type="submit" disabled={loading} style={{ backgroundColor: 'green', color: 'white', padding: '10px' }}>
-                {loading ? 'Procesando...' : 'REGISTRAR EMBARCACIÓN'}
+            <button type="submit" disabled={loading} style={{ backgroundColor: vesselToEdit ? '#1976d2' : 'green', color: 'white', padding: '10px' }}>
+                {loading ? 'Procesando...' : vesselToEdit ? 'ACTUALIZAR DATOS' : 'REGISTRAR EMBARCACIÓN'}
             </button>
         </form>
     );

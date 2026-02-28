@@ -63,6 +63,15 @@ export const vesselService = {
         return await vesselService.createVessel(finalPayload);
     },
 
+    updateVessel: async (id: number, data: CreateVesselDto): Promise<void> => {
+        const response = await fetch(`${API_URL}/vessels/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Error al actualizar');
+    },
+
     deleteVessel: async (id: number): Promise<void> => {
         const response = await fetch(`${API_URL}/vessels/${id}`, {
             method: 'DELETE',
