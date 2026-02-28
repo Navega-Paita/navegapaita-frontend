@@ -10,6 +10,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { userService } from '../../core/services/user.service';
 import type { UserStaffDto } from "../../core/services/user.service";
+import {UserForm} from "./UserForm.tsx";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<UserStaffDto[]>([]);
@@ -114,20 +115,31 @@ export default function UserManagementPage() {
                     {isEditMode ? `Editar ${selectedUser?.role}` : `Perfil de ${selectedUser?.role}`}
                 </DialogTitle>
                 <DialogContent>
-                    {selectedUser?.role === 'OPERATOR' ? (
-                        <OperatorDetailView
-                            user={selectedUser}
-                            isEdit={isEditMode}
-                            onClose={() => setOpenDialog(false)}
-                            onRefresh={loadUsers}
+                    {/* 1. Si no hay usuario seleccionado, mostrar formulario de creación */}
+                    {!selectedUser ? (
+                        <UserForm
+                            onSuccess={() => {
+                                setOpenDialog(false);
+                                loadUsers(); // Recarga la tabla para ver al nuevo operador
+                            }}
                         />
                     ) : (
-                        <FishermanDetailView
-                            user={selectedUser}
-                            isEdit={isEditMode}
-                            onClose={() => setOpenDialog(false)}
-                            onRefresh={loadUsers}
-                        />
+                        /* 2. Si hay usuario, distinguir entre OPERATOR o FISHERMAN */
+                        selectedUser.role === 'OPERATOR' ? (
+                            <OperatorDetailView
+                                user={selectedUser}
+                                isEdit={isEditMode}
+                                onClose={() => setOpenDialog(false)}
+                                onRefresh={loadUsers}
+                            />
+                        ) : (
+                            <FishermanDetailView
+                                user={selectedUser}
+                                isEdit={isEditMode}
+                                onClose={() => setOpenDialog(false)}
+                                onRefresh={loadUsers}
+                            />
+                        )
                     )}
                 </DialogContent>
             </Dialog>
