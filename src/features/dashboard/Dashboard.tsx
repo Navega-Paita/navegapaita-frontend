@@ -11,14 +11,57 @@ import { toast, Toaster } from "react-hot-toast";
 import alertSound from '../../assets/sounds/alert-sound.mp3'; // Ajusta los ../ según tu nivel de carpeta
 import type { SignalAlert, SignalAlertsMap} from "../../shared/models/signalAlert.ts";
 import { ChatWindow} from "../chat/ChatWindow.tsx";
+import { OperationModal} from "./OperationModal.tsx";
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // Opcional para el icono
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
 
 
 export const Dashboard: React.FC = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [operations, setOperations] = useState<Operation[]>([]);
     const [fishermen, setFishermen] = useState<User[]>([]);
     const [vessels, setVessels] = useState<Vessel[]>([]);
     const alertAudio = new Audio(alertSound);
     const [activeChatId, setActiveChatId] = useState<number | null>(null);
+    const [vesselModal, setVesselModal] = useState<{
+        open: boolean;
+        opId: number | null;
+        opName: string;
+    }>({
+        open: false,
+        opId: null,
+        opName: ''
+    });
+    const [selectedVesselId, setSelectedVesselId] = useState<string>('');
+
+    const handleOpenAssign = (id: number, tourName: string) => {
+        setVesselModal({
+            open: true,
+            opId: id,
+            opName: tourName
+        });
+    };
+
+    const handleDelete = async (id: number) => {
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta operación? Esta acción no se puede deshacer.");
+        if (confirmed) {
+            try {
+                // Aquí llamarías a operationService.delete(id) cuando lo tengas
+                console.log("Eliminando operación:", id);
+                // await operationService.delete(id);
+                // toast.success("Operación eliminada");
+            } catch (error: any) {
+                console.error(error.message);
+            }
+        }
+    };
+
+    const handleEdit = (operation: Operation) => {
+        console.log("Editando operación:", operation);
+        // Aquí abrirías el modal de edición pasando los datos de la operación actual
+        // setSelectedOperation(operation);
+        // setIsEditModalOpen(true);
+    };
 
     useEffect(() => {
         const signalRef = ref(db, 'signal_alerts');
@@ -166,69 +209,113 @@ export const Dashboard: React.FC = () => {
             {/* Contenedor de notificaciones */}
             <Toaster position="top-right" reverseOrder={false} />
 
-            <h1>Dashboard de Control Pesquero</h1>
+
 
             <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '20px' }}>
 
                 {/* COLUMNA IZQUIERDA: OPERACIONES */}
                 <section>
-                    <h3>Operaciones Turísticas</h3>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between', // Esto empuja a los hijos a los extremos
+                            alignItems: 'center',
+                            marginBottom: '20px',
+                            width: '100%'
+                        }}
+                    >
+                        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
+                            Dashboard de Control Pesquero
+                        </h1>
+
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            style={{
+                                backgroundColor: '#2e7d32',
+                                color: 'white',
+                                border: 'none',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1b5e20')}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#2e7d32')}
+                        >
+                            <AddCircleIcon fontSize="small" />
+                            Crear Operación
+                        </button>
+                    </div>
                     <table border={1} style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead style={{ backgroundColor: '#f4f4f4' }}>
                         <tr>
-                            <th>ID</th>
                             <th>Tour</th>
                             <th>Estado</th>
                             <th>Pescador</th>
-                            <th>Motivo</th>
-                            <th>Chat</th>
+                            <th>Embarcacion</th>
+                            <th>Seguimiento</th>
+                            <th>Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
                         {operations.map(op => {
                             // Definimos si el chat debe estar habilitado
-                            const isChatEnabled = op.status === 'IN_PROGRESS' || op.status === 'COMPLETED';
+                            const canSendRequest = op.status === 'PENDING';
+                            const isChatEnabled = ['CONFIRMED', 'IN_PROGRESS', 'COMPLETED'].includes(op.status);
 
                             return (
                                 <tr key={op.id} style={{ textAlign: 'center' }}>
-                                    <td>{op.id}</td>
                                     <td>{op.tourName}</td>
                                     <td style={{ fontWeight: 'bold', color: getStatusColor(op.status) }}>
                                         {op.status}
                                     </td>
                                     <td>{op.fisherman ? `${op.fisherman.firstName} ${op.fisherman.lastName}` : '---'}</td>
-                                    <td style={{ color: 'red', fontSize: '0.8em' }}>{op.rejectionReason || '-'}</td>
+                                    <td> {op.vessel ? `${op.vessel.name}` : '---'}</td>
 
-                                    {/* Columna de Chat con validación de estado */}
-                                    <td style={{ verticalAlign: 'middle' }}>
-                                        <button
-                                            onClick={() => isChatEnabled && setActiveChatId(op.id)}
-                                            disabled={!isChatEnabled}
-                                            style={{
-                                                // Reset de estilos de botón para que parezca solo texto
-                                                background: 'none',
-                                                border: 'none',
-                                                padding: '4px 8px',
-                                                margin: 0,
-                                                font: 'inherit',
-                                                fontWeight: '600',
-                                                fontSize: '0.85em',
+                                    {/* COLUMNA: SOLICITUD / CHAT */}
+                                    <td>
+                                        {/* Ahora permitimos el botón si está PENDING o REQUESTED */}
+                                        {op.status === 'PENDING' || op.status === 'REQUESTED' ? (
+                                            <button
+                                                onClick={() => handleOpenAssign(op.id, op.tourName)}
+                                                style={{
+                                                    backgroundColor: op.status === 'REQUESTED' ? '#ef6c00' : '#ff9800', // Un naranja más oscuro si ya se envió
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '5px 10px',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    fontWeight: op.status === 'REQUESTED' ? 'bold' : 'normal'
+                                                }}
+                                            >
+                                                {/* Cambio dinámico de texto según el estado */}
+                                                {op.status === 'REQUESTED' ? '🔄 Volver a enviar solicitud' : '📩 Enviar Solicitud'}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => isChatEnabled && setActiveChatId(op.id)}
+                                                disabled={!isChatEnabled}
+                                                style={{
+                                                    color: isChatEnabled ? '#0084FF' : '#999',
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: isChatEnabled ? 'pointer' : 'default'
+                                                }}
+                                            >
+                                                {isChatEnabled ? '💬 Abrir Chat' : 'Chat cerrado'}
+                                            </button>
+                                        )}
+                                    </td>
 
-                                                // Lógica de cursor y color
-                                                cursor: isChatEnabled ? 'pointer' : 'not-allowed',
-                                                color: isChatEnabled ? '#0084FF' : '#999999',
-
-                                                // Efecto visual
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '5px',
-                                                textDecoration: isChatEnabled ? 'underline' : 'none',
-                                                opacity: isChatEnabled ? 1 : 0.7,
-                                                transition: 'color 0.2s ease'
-                                            }}
-                                        >
-                                            {isChatEnabled ? 'Abrir Chat' : 'Chat cerrado'}
-                                        </button>
+                                    {/* Columna: Acciones */}
+                                    <td>
+                                        <button onClick={() => handleEdit(op)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
+                                        <button onClick={() => handleDelete(op.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
                                     </td>
                                 </tr>
                             );
@@ -276,6 +363,76 @@ export const Dashboard: React.FC = () => {
 
                 </aside>
             </div>
+
+            <Dialog
+                open={vesselModal.open}
+                onClose={() => setVesselModal({ ...vesselModal, open: false })}
+                fullWidth
+                maxWidth="xs"
+            >
+                <DialogTitle sx={{ fontWeight: 'bold' }}>
+                    🚢 Asignar Embarcación
+                </DialogTitle>
+                <DialogContent>
+                    <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+                        Tour: <strong>{vesselModal.opName}</strong>
+                    </p>
+
+                    <TextField
+                        select
+                        fullWidth
+                        label="Asignar Embarcación (Operativas)"
+                        required
+                        // Usamos el estado que ya tienes definido: selectedVesselId
+                        value={selectedVesselId}
+                        onChange={(e) => setSelectedVesselId(e.target.value)}
+                        helperText={vessels.filter(v => v.status === 'OPERATIVE').length === 0 ? "No hay embarcaciones operativas" : ""}
+                    >
+                        {vessels
+                            .filter(v => v.status === 'OPERATIVE')
+                            .map((v) => (
+                                // Importante: value como String para que coincida con el estado selectedVesselId
+                                <MenuItem key={v.id} value={String(v.id)}>
+                                    {v.name} ({v.registrationNumber})
+                                </MenuItem>
+                            ))}
+                    </TextField>
+                </DialogContent>
+                <DialogActions sx={{ p: 2, bgcolor: '#f5f5f5' }}>
+                    <Button onClick={() => setVesselModal({ ...vesselModal, open: false })}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="warning"
+                        disabled={!selectedVesselId}
+                        onClick={async () => {
+                            try {
+                                // Usamos vesselModal.opId que guardamos al abrir el modal
+                                await operationService.sendRequest(Number(vesselModal.opId), Number(selectedVesselId));
+
+                                // Limpiamos y cerramos
+                                setVesselModal({ ...vesselModal, open: false });
+                                setSelectedVesselId('');
+                                toast.success("Solicitud enviada correctamente");
+                            } catch (err: any) {
+                                alert(err.message);
+                            }
+                        }}
+                    >
+                        🚀 Enviar Solicitud
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <OperationModal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={(newOp) => {
+                    toast.success("Operación creada y asignada correctamente");
+                }}
+            />
+
         </div>
     );
 };

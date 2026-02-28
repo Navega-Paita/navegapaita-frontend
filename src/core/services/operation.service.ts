@@ -12,6 +12,55 @@ export const operationService = {
         return response.json();
     },
 
+    async create(data: {
+        tourName: string;
+        dateTime: string;
+    }): Promise<Operation> {
+        const response = await fetch(`${API_URL}/operations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            // NestJS devuelve un array de strings si fallan varias validaciones del DTO
+            const message = Array.isArray(errorData.message)
+                ? errorData.message.join(', ')
+                : errorData.message;
+
+            throw new Error(message || 'Error al crear la operación');
+        }
+
+        return response.json();
+    },
+
+    async sendRequest(id: number, vesselId: number): Promise<Operation> {
+        const response = await fetch(`${API_URL}/operations/${id}/send-request`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ vesselId })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            const message = Array.isArray(errorData.message)
+                ? errorData.message.join(', ')
+                : errorData.message;
+            throw new Error(message || 'Error al enviar la solicitud');
+        }
+
+        return response.json();
+    },
+
+    async delete(id: number): Promise<void> {
+        await fetch(`${API_URL}/operations/${id}`, { method: 'DELETE' });
+    },
+
     // Retorna los pescadores con su perfil (DNI, status, etc.)
     async getFishermen(): Promise<User[]> {
         const response = await fetch(`${API_URL}/users/fishermen`);

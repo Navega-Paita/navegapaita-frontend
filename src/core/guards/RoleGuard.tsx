@@ -11,11 +11,8 @@ export const RoleGuard = ({ allowedRoles }: RoleGuardProps) => {
 
     // LOG DE DEBUG
     console.log("--- DEBUG ROLE GUARD ---");
-    console.log("1. ¿Está autenticado?:", isAuthenticated);
-    console.log("2. Usuario en estado:", user);
-    console.log("3. Rol del usuario:", user?.role);
-    console.log("4. Roles permitidos para esta ruta:", allowedRoles);
-    console.log("5. ¿El rol está en la lista?:", allowedRoles.includes(user?.role));
+    console.log(" Rol del usuario:", user?.role);
+    console.log(" Roles permitidos para esta ruta:", allowedRoles);
 
     if (!isAuthenticated) {
         console.warn("DEBUG: No autenticado, redirigiendo a login");
