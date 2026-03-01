@@ -27,14 +27,17 @@ import {
     Phone,
     ChevronRight,
     Close,
+    Dashboard,
+    DirectionsBoat,
+    People,
+    MonitorHeart,
 } from '@mui/icons-material';
-import {useAuth} from "../../../core/context/AuthContext.tsx";
+import { useAuth } from "../../../core/context/AuthContext.tsx";
 
-// 1. Buscador adaptado al fondo oscuro (blanco traslúcido)
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15), // Blanco traslúcido
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
     '&:hover': {
         backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
@@ -54,18 +57,18 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'white', // Icono blanco
+    color: 'white',
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'white', // Texto blanco
+    color: 'white',
     width: '100%',
     '& .MuiInputBase-input': {
         padding: theme.spacing(1, 1, 1, 0),
         paddingLeft: `calc(1em + ${theme.spacing(4)})`,
         transition: theme.transitions.create('width'),
         '&::placeholder': {
-            color: alpha(theme.palette.common.white, 0.7), // Placeholder legible
+            color: alpha(theme.palette.common.white, 0.7),
             opacity: 1,
         },
         [theme.breakpoints.up('sm')]: {
@@ -77,17 +80,63 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
+// Mapeo de iconos por path para el drawer
+const navIconMap: Record<string, JSX.Element> = {
+    '/buscar': <SearchIcon />,
+    '/sobre-paita': <Phone />,
+    '/dashboard': <Dashboard />,
+    '/embarcaciones': <DirectionsBoat />,
+    '/usuarios': <People />,
+    '/monitoreo': <MonitorHeart />,
+};
+
 export default function Header() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
     const { isAuthenticated, user } = useAuth();
+
     const accountPath = isAuthenticated
         ? (user?.role === 'FISHERMAN' ? '/profile' : '/perfil')
         : '/login';
 
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [searchOpen, setSearchOpen] = useState<boolean>(false);
+
+    const getNavLinks = () => {
+        const role = user?.role;
+
+        if (role === 'ADMIN') {
+            return [
+                { text: 'Dashboard', path: '/dashboard' },
+                { text: 'Embarcaciones', path: '/embarcaciones' },
+                { text: 'Usuarios', path: '/usuarios' },
+                { text: 'Monitoreo', path: '/monitoreo' },
+            ];
+        }
+
+        if (role === 'OPERATOR') {
+            return [
+                { text: 'Dashboard', path: '/dashboard' },
+                { text: 'Embarcaciones', path: '/embarcaciones' },
+                { text: 'Monitoreo', path: '/monitoreo' },
+            ];
+        }
+
+        // FISHERMAN o no autenticado
+        return [
+            { text: 'Experiencias', path: '/buscar' },
+            { text: 'Sobre Paita', path: '/sobre-paita' },
+        ];
+    };
+
+    const navLinks = getNavLinks();
+
+    // ¿Mostrar barra de búsqueda? Solo para FISHERMAN o no autenticados
+    const showSearch = !user?.role || user.role === 'FISHERMAN';
+
+    // ¿Mostrar iconos de wishlist/contacto? Solo para FISHERMAN o no autenticados
+    const showPublicIcons = !user?.role || user.role === 'FISHERMAN';
 
     const toggleDrawer = (open: boolean) => (event: KeyboardEvent | MouseEvent) => {
         if (
@@ -103,10 +152,9 @@ export default function Header() {
         setSearchOpen(!searchOpen);
     };
 
-    // Estilo común para los links de navegación
     const navLinkStyle = {
         fontWeight: 500,
-        color: 'white', // Texto en blanco
+        color: 'white',
         textDecoration: 'none',
         fontSize: '0.95rem',
         '&:hover': { opacity: 0.8 }
@@ -125,40 +173,47 @@ export default function Header() {
 
             <Divider />
 
+            {/* Nav links dinámicos según rol */}
             <List>
-                <ListItem disablePadding>
-                    <ListItemButton onClick={() => { navigate('/buscar'); setDrawerOpen(false); }}>
-                        <ListItemText primary="Experiencias" />
-                        <ChevronRight />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton onClick={() => { navigate('/sobre-paita'); setDrawerOpen(false); }}>
-                        <ListItemText primary="Sobre Paita" />
-                        <ChevronRight />
-                    </ListItemButton>
-                </ListItem>
+                {navLinks.map((link) => (
+                    <ListItem key={link.path} disablePadding>
+                        <ListItemButton onClick={() => { navigate(link.path); setDrawerOpen(false); }}>
+                            <ListItemIcon sx={{ color: '#0d47a1' }}>
+                                {navIconMap[link.path] ?? <ChevronRight />}
+                            </ListItemIcon>
+                            <ListItemText primary={link.text} />
+                            <ChevronRight />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
             </List>
 
             <Divider sx={{ my: 2 }} />
 
+            {/* Acciones secundarias */}
             <List>
-                {[
-                    { text: 'Lista de deseo', icon: <FavoriteBorder />, path: '/wishlist' },
-                    {
-                        text: isAuthenticated ? 'Mi Perfil' : 'Iniciar Sesión',
-                        icon: <AccountCircle />,
-                        path: accountPath
-                    },
-                    { text: 'Contáctanos', icon: <Phone />, path: '/contacto' },
-                ].map((item) => (
-                    <ListItem key={item.text} disablePadding>
-                        <ListItemButton onClick={() => { navigate(item.path); setDrawerOpen(false); }}>
-                            <ListItemIcon sx={{ color: '#0d47a1' }}>{item.icon}</ListItemIcon>
-                            <ListItemText primary={item.text} />
+                {showPublicIcons && (
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => { navigate('/wishlist'); setDrawerOpen(false); }}>
+                            <ListItemIcon sx={{ color: '#0d47a1' }}><FavoriteBorder /></ListItemIcon>
+                            <ListItemText primary="Lista de deseo" />
                         </ListItemButton>
                     </ListItem>
-                ))}
+                )}
+                <ListItem disablePadding>
+                    <ListItemButton onClick={() => { navigate(accountPath); setDrawerOpen(false); }}>
+                        <ListItemIcon sx={{ color: '#0d47a1' }}><AccountCircle /></ListItemIcon>
+                        <ListItemText primary={isAuthenticated ? 'Mi Perfil' : 'Iniciar Sesión'} />
+                    </ListItemButton>
+                </ListItem>
+                {showPublicIcons && (
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => { navigate('/contacto'); setDrawerOpen(false); }}>
+                            <ListItemIcon sx={{ color: '#0d47a1' }}><Phone /></ListItemIcon>
+                            <ListItemText primary="Contáctanos" />
+                        </ListItemButton>
+                    </ListItem>
+                )}
             </List>
         </Box>
     );
@@ -169,16 +224,18 @@ export default function Header() {
                 position="sticky"
                 elevation={0}
                 sx={{
-                    backgroundColor: '#0d47a1', // Azul Turismocity
-                    color: 'white' // Asegura que iconos hereden blanco
+                    backgroundColor: '#0d47a1',
+                    color: 'white'
                 }}
             >
                 <Toolbar sx={{ justifyContent: 'space-between' }}>
                     {isMobile ? (
                         <>
-                            <IconButton onClick={handleSearchToggle} sx={{ color: 'white' }}>
-                                <SearchIcon />
-                            </IconButton>
+                            {showSearch && (
+                                <IconButton onClick={handleSearchToggle} sx={{ color: 'white' }}>
+                                    <SearchIcon />
+                                </IconButton>
+                            )}
 
                             <Typography
                                 variant="h6"
@@ -217,41 +274,52 @@ export default function Header() {
                                 NAVEGAPAITA
                             </Typography>
 
+                            {/* Nav links dinámicos en desktop */}
                             <Box sx={{ display: 'flex', gap: 4, flexGrow: 1, alignItems: 'center' }}>
-                                <Typography component={Link} to="/buscar" sx={navLinkStyle}>
-                                    Experiencias
-                                </Typography>
-                                <Typography component={Link} to="/sobre-paita" sx={navLinkStyle}>
-                                    Sobre Paita
-                                </Typography>
+                                {navLinks.map((link) => (
+                                    <Typography
+                                        key={link.path}
+                                        component={Link}
+                                        to={link.path}
+                                        sx={navLinkStyle}
+                                    >
+                                        {link.text}
+                                    </Typography>
+                                ))}
                             </Box>
 
-                            <Search>
-                                <SearchIconWrapper>
-                                    <SearchIcon />
-                                </SearchIconWrapper>
-                                <StyledInputBase
-                                    placeholder="Buscar experiencias..."
-                                    inputProps={{ 'aria-label': 'search' }}
-                                />
-                            </Search>
+                            {showSearch && (
+                                <Search>
+                                    <SearchIconWrapper>
+                                        <SearchIcon />
+                                    </SearchIconWrapper>
+                                    <StyledInputBase
+                                        placeholder="Buscar experiencias..."
+                                        inputProps={{ 'aria-label': 'search' }}
+                                    />
+                                </Search>
+                            )}
 
                             <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                                <IconButton component={Link} to="/wishlist" sx={{ color: 'white' }}>
-                                    <FavoriteBorder />
-                                </IconButton>
+                                {showPublicIcons && (
+                                    <>
+                                        <IconButton component={Link} to="/wishlist" sx={{ color: 'white' }}>
+                                            <FavoriteBorder />
+                                        </IconButton>
+                                        <IconButton component={Link} to="/contacto" sx={{ color: 'white' }}>
+                                            <Phone />
+                                        </IconButton>
+                                    </>
+                                )}
                                 <IconButton component={Link} to={accountPath} sx={{ color: 'white' }}>
                                     <AccountCircle />
-                                </IconButton>
-                                <IconButton component={Link} to="/contacto" sx={{ color: 'white' }}>
-                                    <Phone />
                                 </IconButton>
                             </Box>
                         </>
                     )}
                 </Toolbar>
 
-                {isMobile && searchOpen && (
+                {isMobile && searchOpen && showSearch && (
                     <Box sx={{ px: 2, pb: 2, backgroundColor: '#0d47a1' }}>
                         <Search>
                             <SearchIconWrapper>
