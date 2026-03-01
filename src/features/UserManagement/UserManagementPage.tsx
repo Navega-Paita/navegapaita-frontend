@@ -2,7 +2,7 @@ import {useState, useEffect, useCallback} from 'react';
 import {
     Box, Container, Typography, Button, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Paper,
-    IconButton, Chip, Dialog, DialogTitle, DialogContent, Divider
+    IconButton, Chip, Dialog, DialogTitle, DialogContent, Divider, Stack, Avatar, Grid, TextField
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,6 +11,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { userService } from '../../core/services/user.service';
 import type { UserStaffDto } from "../../core/services/user.service";
 import {UserForm} from "./UserForm.tsx";
+import PhishingIcon from '@mui/icons-material/Phishing';
+import PhoneIcon from '@mui/icons-material/Phone';
+import HomeIcon from '@mui/icons-material/Home';
+import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EmailIcon from '@mui/icons-material/Email';
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<UserStaffDto[]>([]);
@@ -24,6 +31,7 @@ export default function UserManagementPage() {
         setLoading(true);
         try {
             const data = await userService.getStaffMembers();
+            console.log(data);
             setUsers(data);
         } catch (error) {
             console.error(error);
@@ -111,8 +119,15 @@ export default function UserManagementPage() {
 
             {/* Modal para Crear/Editar Operador */}
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
-                <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                    {isEditMode ? `Editar ${selectedUser?.role}` : `Perfil de ${selectedUser?.role}`}
+                <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, fontWeight: 700 }}>
+                    {(() => {
+                        if (!selectedUser && !isEditMode) return "Nuevo Miembro del Staff";
+
+                        const roleName = selectedUser?.role === 'OPERATOR' ? 'Operador' : 'Pescador';
+
+                        if (isEditMode) return `Editar ${roleName}`;
+                        return `Perfil de ${roleName}`;
+                    })()}
                 </DialogTitle>
                 <DialogContent>
                     {/* 1. Si no hay usuario seleccionado, mostrar formulario de creación */}
@@ -148,48 +163,139 @@ export default function UserManagementPage() {
 }
 
 
-const OperatorDetailView = ({ user, isEdit, onClose, onRefresh }: any) => {
+export const OperatorDetailView = ({ user, isEdit, onClose, onRefresh }: any) => {
     const [form, setForm] = useState({ firstName: user.firstName, lastName: user.lastName });
 
     const handleSave = async () => {
-        await userService.updateUser(user.id, form);
+        // await userService.updateUser(user.id, form);
         onRefresh();
         onClose();
     };
 
     return (
-        <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant="caption" color="textSecondary">ID del Sistema: {user.id}</Typography>
-            <Typography variant="body2">Miembro desde: {new Date().toLocaleDateString()} (Mock)</Typography>
+        <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Header: ID y Rol */}
+            <Stack direction="row" spacing={1} alignItems="center">
+                <Chip
+                    icon={<AdminPanelSettingsIcon />}
+                    label={user.role}
+                    size="small"
+                    sx={{ bgcolor: '#141d38', color: 'white', fontWeight: 'bold' }}
+                />
+                <Typography variant="caption" color="textSecondary">ID del Sistema: #{user.id}</Typography>
+            </Stack>
 
             {isEdit ? (
-                <>
-                    <input value={form.firstName} onChange={e => setForm({...form, firstName: e.target.value})} placeholder="Nombre" />
-                    <input value={form.lastName} onChange={e => setForm({...form, lastName: e.target.value})} placeholder="Apellido" />
-                    <Button onClick={handleSave} variant="contained">Guardar Cambios</Button>
-                </>
+                <Stack spacing={2}>
+                    <TextField
+                        fullWidth label="Nombre" size="small"
+                        value={form.firstName}
+                        onChange={e => setForm({...form, firstName: e.target.value})}
+                    />
+                    <TextField
+                        fullWidth label="Apellido" size="small"
+                        value={form.lastName}
+                        onChange={e => setForm({...form, lastName: e.target.value})}
+                    />
+                    <Button
+                        onClick={handleSave}
+                        variant="contained"
+                        fullWidth
+                        sx={{ mt: 1, bgcolor: '#0d47a1', textTransform: 'none', fontWeight: 700 }}
+                    >
+                        Guardar Cambios
+                    </Button>
+                </Stack>
             ) : (
-                <Typography variant="h6">{user.firstName} {user.lastName}</Typography>
+                <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#141d38', mb: 1 }}>
+                        {user.firstName} {user.lastName}
+                    </Typography>
+
+                    <Stack spacing={1.5}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <EmailIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                            <Typography variant="body2">{user.email}</Typography>
+                        </Box>
+                        <Divider />
+                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
+                            Miembro del personal con acceso de gestión de operaciones.
+                        </Typography>
+                    </Stack>
+                </Box>
             )}
         </Box>
     );
 };
+export const FishermanDetailView = ({ user, isEdit, onClose, onRefresh }: any) => {
+    const profile = user.fishermanProfile;
 
-const FishermanDetailView = ({ user, isEdit, onClose, onRefresh }: any) => {
-    // Aquí podrías tener un select para cambiar el estado (Activo/Inactivo)
     return (
-        <Box sx={{ pt: 2 }}>
-            <Typography variant="h6">{user.firstName} {user.lastName}</Typography>
-            <Typography color="primary">{user.email}</Typography>
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="subtitle2">Datos de Embarcación Asociada:</Typography>
-            <Typography variant="body2" color="textSecondary">Aquí jalaríamos su FishermanProfile...</Typography>
+        <Box sx={{ pt: 1 }}>
+            {/* Cabecera con Avatar y Estado */}
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar sx={{ bgcolor: '#0d47a1', width: 56, height: 56 }}>
+                        <PhishingIcon />
+                    </Avatar>
+                    <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>{user.firstName} {user.lastName}</Typography>
+                        <Typography variant="body2" color="textSecondary">{user.email}</Typography>
+                    </Box>
+                </Stack>
+                <Chip
+                    label={profile?.status || 'SIN ESTADO'}
+                    color={profile?.status === 'AVAILABLE' ? 'success' : 'warning'}
+                    sx={{ fontWeight: 'bold' }}
+                />
+            </Stack>
+
+            <Divider sx={{ mb: 3 }} />
+
+            {/* Grid de Información Detallada */}
+            <Grid container spacing={2}>
+                <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <AssignmentIndIcon sx={{ fontSize: 14 }} /> DNI
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{profile?.dni || '---'}</Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <PhoneIcon sx={{ fontSize: 14 }} /> TELÉFONO
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{profile?.phone || '---'}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <HomeIcon sx={{ fontSize: 14 }} /> DIRECCIÓN
+                    </Typography>
+                    <Typography variant="body2">{profile?.address || '---'}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <Box sx={{ bgcolor: '#fff3e0', p: 1.5, borderRadius: '8px', border: '1px solid #ffe0b2' }}>
+                        <Typography variant="caption" color="#e65100" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 'bold' }}>
+                            <ContactEmergencyIcon sx={{ fontSize: 14 }} /> CONTACTO DE EMERGENCIA
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#bf360c', fontWeight: 500 }}>
+                            {profile?.emergencyContact || 'No especificado'}
+                        </Typography>
+                    </Box>
+                </Grid>
+            </Grid>
 
             {isEdit && (
-                <Box sx={{ mt: 3 }}>
-                    <Typography variant="caption">Cambiar Estado de Cuenta:</Typography>
-                    {/* Select de estado aquí */}
-                    <Button fullWidth variant="outlined" sx={{ mt: 1 }}>Suspender Acceso</Button>
+                <Box sx={{ mt: 4 }}>
+                    <Divider sx={{ mb: 2 }} />
+                    <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold' }}>GESTIÓN DE CUENTA</Typography>
+                    <Button
+                        fullWidth
+                        variant="outlined"
+                        color="error"
+                        sx={{ mt: 1, borderRadius: '8px', textTransform: 'none', fontWeight: 700 }}
+                    >
+                        Suspender Acceso del Pescador
+                    </Button>
                 </Box>
             )}
         </Box>
