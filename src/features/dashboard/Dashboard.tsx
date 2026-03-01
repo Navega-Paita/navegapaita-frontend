@@ -299,16 +299,32 @@ export const Dashboard: React.FC = () => {
                                             </Stack>
                                         </TableCell>
                                         <TableCell align="center">
-                                            {op.status === 'PENDING' || op.status === 'REQUESTED' ? (
+                                            {/* Agregamos 'REJECTED' a la condición principal */}
+                                            {['PENDING', 'REQUESTED', 'REJECTED'].includes(op.status) ? (
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
-                                                    color={op.status === 'REQUESTED' ? "warning" : "primary"}
-                                                    startIcon={op.status === 'REQUESTED' ? <SyncIcon /> : <SendIcon />}
+                                                    // Si es rechazado, usamos color 'error' para llamar la atención del operador
+                                                    color={
+                                                        op.status === 'REJECTED' ? "error" :
+                                                            op.status === 'REQUESTED' ? "warning" : "primary"
+                                                    }
+                                                    startIcon={
+                                                        op.status === 'REJECTED' ? <SyncIcon /> :
+                                                            op.status === 'REQUESTED' ? <SyncIcon /> : <SendIcon />
+                                                    }
                                                     onClick={() => handleOpenAssign(op.id, op.tourName)}
-                                                    sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}
+                                                    sx={{
+                                                        borderRadius: '8px',
+                                                        textTransform: 'none',
+                                                        fontWeight: 600,
+                                                        // Si es rechazado, un borde un poco más grueso ayuda visualmente
+                                                        borderWidth: op.status === 'REJECTED' ? 2 : 1,
+                                                        '&:hover': { borderWidth: op.status === 'REJECTED' ? 2 : 1 }
+                                                    }}
                                                 >
-                                                    {op.status === 'REQUESTED' ? 'Reenviar' : 'Solicitar'}
+                                                    {op.status === 'REJECTED' ? 'Reintentar' :
+                                                        op.status === 'REQUESTED' ? 'Reenviar' : 'Solicitar'}
                                                 </Button>
                                             ) : (
                                                 <IconButton
