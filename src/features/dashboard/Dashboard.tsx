@@ -1,20 +1,36 @@
 import React, { useEffect, useState } from 'react';
+import {
+    Box, Typography, Button, Table, TableBody, TableCell,
+    TableContainer, TableHead, TableRow, Paper, Chip,
+    IconButton, Card, CardContent, Divider, Avatar,
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    TextField, MenuItem, Stack,
+    List,
+    ListItem, ListItemText
+} from '@mui/material';
+import {
+    AddCircle as AddCircleIcon,
+    Edit as EditIcon,
+    Delete as DeleteIcon,
+    ChatBubbleOutline as ChatIcon,
+    Send as SendIcon,
+    DirectionsBoat as BoatIcon,
+    Person as PersonIcon,
+    Sync as SyncIcon
+} from '@mui/icons-material';
 import { socketService } from "../../core/services/socket.service";
 import { operationService } from "../../core/services/operation.service";
 import type { Operation } from "../../shared/models/operation.model";
-import type { User } from "../../shared/models/user.model";
+import type { User, FishermanStatus } from "../../shared/models/user.model";
 import type { Vessel } from "../../shared/models/vessel.model";
-import type { FishermanStatus } from "../../shared/models/user.model";
 import { ref, onValue } from "firebase/database";
-import {db} from "../../core/config/firebase.ts";
+import { db } from "../../core/config/firebase.ts";
 import { toast, Toaster } from "react-hot-toast";
-import alertSound from '../../assets/sounds/alert-sound.mp3'; // Ajusta los ../ según tu nivel de carpeta
+import alertSound from '../../assets/sounds/alert-sound.mp3';
+import { ChatWindow } from "../chat/ChatWindow.tsx";
 import type { SignalAlert, SignalAlertsMap} from "../../shared/models/signalAlert.ts";
-import { ChatWindow} from "../chat/ChatWindow.tsx";
 import { OperationModal} from "./OperationModal.tsx";
-import AddCircleIcon from '@mui/icons-material/AddCircle'; // Opcional para el icono
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
-
+import Grid from "@mui/material/Grid";
 
 export const Dashboard: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -204,165 +220,176 @@ export const Dashboard: React.FC = () => {
         };
     }, []);
 
+    // Helper para Renderizar Chips de Estado
+    const renderStatusChip = (status: string) => {
+        const colors: any = {
+            'PENDING': { bg: '#fff3e0', text: '#ef6c00', label: 'Pendiente' },
+            'REQUESTED': { bg: '#fffde7', text: '#fbc02d', label: 'Solicitado' },
+            'CONFIRMED': { bg: '#e8f5e9', text: '#2e7d32', label: 'Confirmado' },
+            'IN_PROGRESS': { bg: '#e3f2fd', text: '#1565c0', label: 'En Curso' },
+            'REJECTED': { bg: '#ffebee', text: '#c62828', label: 'Rechazado' },
+        };
+        const config = colors[status] || { bg: '#f5f5f5', text: '#757575', label: status };
+        return <Chip label={config.label} sx={{ bgcolor: config.bg, color: config.text, fontWeight: 'bold', borderRadius: '6px' }} size="small" />;
+    };
+
     return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-            {/* Contenedor de notificaciones */}
-            <Toaster position="top-right" reverseOrder={false} />
+        <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f9fa', minHeight: '100vh' }}>
+            <Toaster position="top-right" />
 
+            {/* HEADER DEL DASHBOARD */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#141d38' }}>
+                        Control de Operaciones
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Monitoreo de embarcaciones y tours.
+                    </Typography>
+                </Box>
+                <Button
+                    variant="contained"
+                    startIcon={<AddCircleIcon />}
+                    onClick={() => setIsModalOpen(true)}
+                    sx={{
+                        bgcolor: '#2e7d32',
+                        borderRadius: '10px',
+                        px: 3,
+                        py: 1.2,
+                        textTransform: 'none',
+                        fontWeight: 'bold',
+                        '&:hover': { bgcolor: '#1b5e20' }
+                    }}
+                >
+                    Nueva Operación
+                </Button>
+            </Box>
 
-
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '20px' }}>
-
-                {/* COLUMNA IZQUIERDA: OPERACIONES */}
-                <section>
-                    <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between', // Esto empuja a los hijos a los extremos
-                            alignItems: 'center',
-                            marginBottom: '20px',
-                            width: '100%'
-                        }}
-                    >
-                        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
-                            Dashboard de Control Pesquero
-                        </h1>
-
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            style={{
-                                backgroundColor: '#2e7d32',
-                                color: 'white',
-                                border: 'none',
-                                padding: '10px 20px',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                transition: 'background-color 0.2s'
-                            }}
-                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1b5e20')}
-                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#2e7d32')}
-                        >
-                            <AddCircleIcon fontSize="small" />
-                            Crear Operación
-                        </button>
-                    </div>
-                    <table border={1} style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead style={{ backgroundColor: '#f4f4f4' }}>
-                        <tr>
-                            <th>Tour</th>
-                            <th>Estado</th>
-                            <th>Pescador</th>
-                            <th>Embarcacion</th>
-                            <th>Seguimiento</th>
-                            <th>Acciones</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {operations.map(op => {
-                            // Definimos si el chat debe estar habilitado
-                            const canSendRequest = op.status === 'PENDING';
-                            const isChatEnabled = ['CONFIRMED', 'IN_PROGRESS', 'COMPLETED'].includes(op.status);
-
-                            return (
-                                <tr key={op.id} style={{ textAlign: 'center' }}>
-                                    <td>{op.tourName}</td>
-                                    <td style={{ fontWeight: 'bold', color: getStatusColor(op.status) }}>
-                                        {op.status}
-                                    </td>
-                                    <td>{op.fisherman ? `${op.fisherman.firstName} ${op.fisherman.lastName}` : '---'}</td>
-                                    <td> {op.vessel ? `${op.vessel.name}` : '---'}</td>
-
-                                    {/* COLUMNA: SOLICITUD / CHAT */}
-                                    <td>
-                                        {/* Ahora permitimos el botón si está PENDING o REQUESTED */}
-                                        {op.status === 'PENDING' || op.status === 'REQUESTED' ? (
-                                            <button
-                                                onClick={() => handleOpenAssign(op.id, op.tourName)}
-                                                style={{
-                                                    backgroundColor: op.status === 'REQUESTED' ? '#ef6c00' : '#ff9800', // Un naranja más oscuro si ya se envió
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    padding: '5px 10px',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer',
-                                                    fontWeight: op.status === 'REQUESTED' ? 'bold' : 'normal'
-                                                }}
-                                            >
-                                                {/* Cambio dinámico de texto según el estado */}
-                                                {op.status === 'REQUESTED' ? '🔄 Volver a enviar solicitud' : '📩 Enviar Solicitud'}
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => isChatEnabled && setActiveChatId(op.id)}
-                                                disabled={!isChatEnabled}
-                                                style={{
-                                                    color: isChatEnabled ? '#0084FF' : '#999',
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    cursor: isChatEnabled ? 'pointer' : 'default'
-                                                }}
-                                            >
-                                                {isChatEnabled ? '💬 Abrir Chat' : 'Chat cerrado'}
-                                            </button>
-                                        )}
-                                    </td>
-
-                                    {/* Columna: Acciones */}
-                                    <td>
-                                        <button onClick={() => handleEdit(op)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
-                                        <button onClick={() => handleDelete(op.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
-                    {/* 3. Renderizado condicional de la ventana flotante */}
-                    {activeChatId && (
-                        <ChatWindow
-                            operationId={activeChatId}
-                            onClose={() => setActiveChatId(null)}
-                        />
-                    )}
-                </section>
+            <Grid container spacing={3}>
+                {/* COLUMNA IZQUIERDA: TABLA */}
+                <Grid size={{ xs: 12, lg: 9 }}>
+                    <TableContainer component={Paper} sx={{ borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                        <Table>
+                            <TableHead sx={{ bgcolor: '#f1f3f5' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Tour</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>Estado</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Asignación</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>Seguimiento</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {operations.map((op) => (
+                                    <TableRow key={op.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{op.tourName}</Typography>
+                                        </TableCell>
+                                        <TableCell align="center">{renderStatusChip(op.status)}</TableCell>
+                                        <TableCell>
+                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                <Box>
+                                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                        {op.fisherman ? `${op.fisherman.firstName}` : 'Sin Pescador'}
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ display: 'block', color: 'primary.main' }}>
+                                                        {op.vessel?.name || '---'}
+                                                    </Typography>
+                                                </Box>
+                                            </Stack>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            {op.status === 'PENDING' || op.status === 'REQUESTED' ? (
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color={op.status === 'REQUESTED' ? "warning" : "primary"}
+                                                    startIcon={op.status === 'REQUESTED' ? <SyncIcon /> : <SendIcon />}
+                                                    onClick={() => handleOpenAssign(op.id, op.tourName)}
+                                                    sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}
+                                                >
+                                                    {op.status === 'REQUESTED' ? 'Reenviar' : 'Solicitar'}
+                                                </Button>
+                                            ) : (
+                                                <IconButton
+                                                    onClick={() => setActiveChatId(op.id)}
+                                                    disabled={!['CONFIRMED', 'IN_PROGRESS'].includes(op.status)}
+                                                    color="primary"
+                                                >
+                                                    <ChatIcon />
+                                                </IconButton>
+                                            )}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <IconButton size="small" onClick={() => handleEdit(op)}><EditIcon fontSize="small" /></IconButton>
+                                            <IconButton size="small" color="error" onClick={() => handleDelete(op.id)}><DeleteIcon fontSize="small" /></IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Grid>
 
                 {/* COLUMNA DERECHA: RECURSOS */}
-                <aside>
-                    <div style={{ marginBottom: '30px' }}>
-                        <h4>Pescadores</h4>
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {fishermen.map(f => (
-                                <li key={f.id} style={{ marginBottom: '8px', borderBottom: '1px solid #eee' }}>
-                                    {f.firstName} -
-                                    <span style={{ color: f.fishermanProfile?.status === 'AVAILABLE' ? 'green' : 'orange' }}>
-                                        {f.fishermanProfile?.status}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                <Grid size={{ xs: 12, lg: 3 }}>
+                    <Stack spacing={3}>
+                        {/* CARD PESCADORES */}
+                        <Card sx={{ borderRadius: '15px', bgcolor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                            <CardContent>
+                                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
+                                    <PersonIcon color="primary" /> Pescadores
+                                </Typography>
+                                <List sx={{ width: '100%' }}>
+                                    {fishermen.map(f => (
+                                        <ListItem key={f.id} sx={{ px: 0, py: 1 }}>
+                                            <ListItemText
+                                                primary={f.firstName}
+                                                secondary={
+                                                    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: f.fishermanProfile?.status === 'AVAILABLE' ? '#4caf50' : '#ff9800' }} />
+                                                        {f.fishermanProfile?.status}
+                                                    </Box>
+                                                }
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </CardContent>
+                        </Card>
 
-                    <div>
-                        <h4>Embarcaciones</h4>
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {vessels.map(v => (
-                                <li key={v.id} style={{ marginBottom: '8px', borderBottom: '1px solid #eee' }}>
-                                    {v.name} -
-                                    <span style={{ color: v.status === 'OPERATIVE' ? 'green' : 'red' }}>
-                                        {v.status}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                        {/* CARD EMBARCACIONES */}
+                        <Card sx={{ borderRadius: '15px', bgcolor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                            <CardContent>
+                                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
+                                    <BoatIcon color="primary" /> Embarcaciones
+                                </Typography>
+                                <List>
+                                    {vessels.map(v => (
+                                        <ListItem key={v.id} sx={{ px: 0, py: 1 }}>
+                                            <ListItemText
+                                                primary={v.name}
+                                                secondary={
+                                                    <Typography variant="caption" sx={{ color: v.status === 'OPERATIVE' ? 'green' : 'red', fontWeight: 'bold' }}>
+                                                        ● {v.status}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </CardContent>
+                        </Card>
+                    </Stack>
+                </Grid>
+            </Grid>
 
-                </aside>
-            </div>
+            {activeChatId && (
+                <ChatWindow
+                    operationId={activeChatId}
+                    onClose={() => setActiveChatId(null)}
+                />
+            )}
 
             <Dialog
                 open={vesselModal.open}
@@ -432,18 +459,6 @@ export const Dashboard: React.FC = () => {
                     toast.success("Operación creada y asignada correctamente");
                 }}
             />
-
-        </div>
+        </Box>
     );
-};
-
-// Helper para colores de estado
-const getStatusColor = (status: string) => {
-    switch (status) {
-        case 'REQUESTED': return '#EAB308'; // Amarillo
-        case 'CONFIRMED': return '#22C55E'; // Verde
-        case 'REJECTED': return '#EF4444';  // Rojo
-        case 'IN_PROGRESS': return '#3B82F6'; // Azul
-        default: return '#6B7280'; // Gris
-    }
 };
