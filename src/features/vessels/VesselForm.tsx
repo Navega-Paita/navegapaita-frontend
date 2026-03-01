@@ -1,5 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import { vesselService} from "../../core/services/vessel.service.ts";
+import React, { useEffect, useState, useRef } from 'react';
+import {
+    Box, TextField, Button, Typography, MenuItem,
+    Stack, IconButton, CircularProgress, Alert
+} from '@mui/material';
+import { CloudUpload as UploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { vesselService } from "../../core/services/vessel.service.ts";
 import type { CreateVesselDto } from "../../shared/dtos/vessel.dto.ts";
 import { ImageCropper } from '../../shared/components/ImageCropper/ImageCropper.tsx';
 
@@ -9,12 +14,12 @@ const initialFormState: CreateVesselDto = {
     type: '',
     capacity: 0,
     technicalSpecs: '',
-    ownerId: 1,
+    ownerId: 0,
 };
 
 interface VesselFormProps {
     onSuccess?: () => void;
-    vesselToEdit?: any; // Añadimos esta prop
+    vesselToEdit?: any;
 }
 
 export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess, vesselToEdit }) => {
@@ -26,33 +31,28 @@ export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess, vesselToEdit 
         technicalSpecs: vesselToEdit.technicalSpecs,
         ownerId: vesselToEdit.owner?.id || 0,
     } : initialFormState);
+
     const [loading, setLoading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(vesselToEdit?.image?.url || null);
     const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
     const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
     const [owners, setOwners] = useState<any[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Validación: Verifica si el formulario es válido
+    const isFormValid =
+        formData.name.trim() !== '' &&
+        formData.registrationNumber.trim() !== '' &&
+        formData.type.trim() !== '' &&
+        formData.capacity > 0 &&
+        formData.ownerId !== 0;
 
     useEffect(() => {
         vesselService.getOwners().then(setOwners);
     }, []);
 
-    // Creamos una referencia para el input de archivo
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-    const resetForm = () => {
-        setFormData(initialFormState);
-        setPreviewUrl(null);
-        setCroppedBlob(null);
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-
-        // Limpiamos el input de archivo manualmente
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
+        if (e.target.files?.[0]) {
             const reader = new FileReader();
             reader.onload = () => setTempImageSrc(reader.result as string);
             reader.readAsDataURL(e.target.files[0]);
@@ -60,9 +60,7 @@ export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess, vesselToEdit 
     };
 
     const handleCropComplete = (blob: Blob) => {
-        // Si ya existía una URL previa, la liberamos
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-
+        if (previewUrl && !vesselToEdit) URL.revokeObjectURL(previewUrl);
         const url = URL.createObjectURL(blob);
         setCroppedBlob(blob);
         setPreviewUrl(url);
@@ -71,60 +69,141 @@ export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess, vesselToEdit 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isFormValid) return;
+
         setLoading(true);
         try {
             if (vesselToEdit) {
-                // Lógica de Edición (Asumiendo que crearemos este método en el service)
                 await vesselService.updateVessel(vesselToEdit.id, formData);
-                alert("Actualizado correctamente");
             } else {
-                // Lógica de Registro (Existente)
                 await vesselService.registerVesselFull(formData, croppedBlob);
-                alert("Registrado correctamente");
             }
             if (onSuccess) onSuccess();
         } catch (error) {
             console.error(error);
-            alert("Error en la operación");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '500px' }}>
-            <input type="text" placeholder="Nombre" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-            <input type="text" placeholder="Matrícula" required value={formData.registrationNumber} onChange={e => setFormData({...formData, registrationNumber: e.target.value})} />
-            <input type="text" placeholder="Tipo" required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} />
-            <input type="number" placeholder="Capacidad" required value={formData.capacity || ''} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
-            <textarea placeholder="Especificaciones" value={formData.technicalSpecs || ''} onChange={e => setFormData({...formData, technicalSpecs: e.target.value})} />
-
-            <select
-                required
-                value={formData.ownerId}
-                onChange={e => setFormData({...formData, ownerId: Number(e.target.value)})}
-                style={{ padding: '10px', borderRadius: '4px' }}
-            >
-                <option value="">Seleccione un dueño (Pescador)</option>
-                {owners.map(o => (
-                    <option key={o.id} value={o.id}>{o.firstName} {o.lastName}</option>
-                ))}
-            </select>
-
-            <div style={{ border: '2px dashed #ccc', padding: '20px', textAlign: 'center' }}>
-                {previewUrl && (
-                    <div style={{ marginBottom: '10px' }}>
-                        <img src={previewUrl} alt="Preview" style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => { setPreviewUrl(null); setCroppedBlob(null); if(fileInputRef.current) fileInputRef.current.value=''; }} style={{ color: 'red', cursor: 'pointer', border: 'none', background: 'none' }}>Eliminar foto</button>
-                    </div>
-                )}
-                <input
-                    type="file"
-                    ref={fileInputRef} // Referencia para limpiar
-                    accept="image/*"
-                    onChange={handleFileChange}
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <Stack spacing={2.5}>
+                <TextField
+                    fullWidth label="Nombre de la Embarcación"
+                    variant="outlined" required
+                    value={formData.name}
+                    onChange={e => setFormData({...formData, name: e.target.value})}
                 />
-            </div>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                        fullWidth label="Matrícula / Registro"
+                        variant="outlined" required
+                        value={formData.registrationNumber}
+                        onChange={e => setFormData({...formData, registrationNumber: e.target.value})}
+                    />
+                    <TextField
+                        fullWidth label="Tipo (ej. Lancha, Yate)"
+                        variant="outlined" required
+                        value={formData.type}
+                        onChange={e => setFormData({...formData, type: e.target.value})}
+                    />
+                </Stack>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                        fullWidth label="Capacidad (pasajeros)"
+                        type="number" variant="outlined" required
+                        value={formData.capacity || ''}
+                        onChange={e => setFormData({...formData, capacity: Number(e.target.value)})}
+                    />
+                    <TextField
+                        select fullWidth label="Dueño (Pescador)"
+                        required value={formData.ownerId || ''}
+                        onChange={e => setFormData({...formData, ownerId: Number(e.target.value)})}
+                    >
+                        <MenuItem value={0} disabled>Seleccione un dueño</MenuItem>
+                        {owners.map(o => (
+                            <MenuItem key={o.id} value={o.id}>{o.firstName} {o.lastName}</MenuItem>
+                        ))}
+                    </TextField>
+                </Stack>
+
+                <TextField
+                    fullWidth label="Especificaciones Técnicas"
+                    multiline rows={3} variant="outlined"
+                    placeholder="Detalles del motor, equipamiento, etc."
+                    value={formData.technicalSpecs || ''}
+                    onChange={e => setFormData({...formData, technicalSpecs: e.target.value})}
+                />
+
+                {/* Zona de Imagen Estilo Moderno */}
+                <Box sx={{
+                    border: '2px dashed',
+                    borderColor: previewUrl ? 'primary.main' : '#ccc',
+                    borderRadius: '12px',
+                    p: 2,
+                    textAlign: 'center',
+                    bgcolor: '#fafafa'
+                }}>
+                    {previewUrl ? (
+                        <Box sx={{ position: 'relative' }}>
+                            <img
+                                src={previewUrl}
+                                alt="Preview"
+                                style={{ width: '100%', borderRadius: '8px', maxHeight: '250px', objectFit: 'cover' }}
+                            />
+                            <IconButton
+                                onClick={() => { setPreviewUrl(null); setCroppedBlob(null); if(fileInputRef.current) fileInputRef.current.value=''; }}
+                                sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'white' } }}
+                                color="error"
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </Box>
+                    ) : (
+                        <Button
+                            component="label"
+                            variant="text"
+                            startIcon={<UploadIcon />}
+                            sx={{ py: 4, width: '100%', color: '#666' }}
+                        >
+                            Subir foto de la embarcación
+                            <input
+                                type="file" hidden
+                                ref={fileInputRef}
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                    )}
+                </Box>
+
+                {!isFormValid && (
+                    <Alert severity="info" sx={{ borderRadius: '8px' }}>
+                        Complete todos los campos requeridos para continuar.
+                    </Alert>
+                )}
+
+                <Button
+                    fullWidth type="submit"
+                    variant="contained"
+                    disabled={loading || !isFormValid}
+                    sx={{
+                        py: 1.5,
+                        fontWeight: 'bold',
+                        borderRadius: '8px',
+                        bgcolor: vesselToEdit ? '#0d47a1' : '#2e7d32',
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        '&:hover': { bgcolor: vesselToEdit ? '#0a3a82' : '#1b5e20' }
+                    }}
+                >
+                    {loading ? <CircularProgress size={24} color="inherit" /> :
+                        vesselToEdit ? 'Actualizar Embarcación' : 'Registrar Embarcación'}
+                </Button>
+            </Stack>
 
             {tempImageSrc && (
                 <ImageCropper
@@ -133,10 +212,6 @@ export const VesselForm: React.FC<VesselFormProps> = ({ onSuccess, vesselToEdit 
                     onCancel={() => setTempImageSrc(null)}
                 />
             )}
-
-            <button type="submit" disabled={loading} style={{ backgroundColor: vesselToEdit ? '#1976d2' : 'green', color: 'white', padding: '10px' }}>
-                {loading ? 'Procesando...' : vesselToEdit ? 'ACTUALIZAR DATOS' : 'REGISTRAR EMBARCACIÓN'}
-            </button>
-        </form>
+        </Box>
     );
 };
