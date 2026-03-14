@@ -2,7 +2,7 @@ import {useState, useEffect, useCallback} from 'react';
 import {
     Box, Container, Typography, Button, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Paper,
-    IconButton, Chip, Dialog, DialogTitle, DialogContent, Divider, Stack, Avatar, Grid, TextField
+    IconButton, Chip, Dialog, DialogTitle, DialogContent, Divider, Stack, Avatar, Grid, TextField, CircularProgress
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -66,7 +66,7 @@ export default function UserManagementPage() {
                 <Button
                     variant="contained"
                     startIcon={<PersonAddIcon />}
-                    onClick={() => { setSelectedUser(null); setOpenDialog(true); }}
+                    onClick={() => { setSelectedUser(null); setIsEditMode(false);  setOpenDialog(true); }}
                 >
                     Nuevo Operador
                 </Button>
@@ -165,11 +165,32 @@ export default function UserManagementPage() {
 
 export const OperatorDetailView = ({ user, isEdit, onClose, onRefresh }: any) => {
     const [form, setForm] = useState({ firstName: user.firstName, lastName: user.lastName });
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
-        // await userService.updateUser(user.id, form);
-        onRefresh();
-        onClose();
+        // Validación básica antes de enviar
+        if (form.firstName.length < 2 || form.lastName.length < 2) {
+            alert("El nombre y apellido deben tener al menos 2 caracteres.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // Llamada al servicio que ya definiste
+            await userService.updateUser(user.id, {
+                firstName: form.firstName,
+                lastName: form.lastName
+            });
+
+            console.log("LOG: Operador actualizado con éxito");
+            onRefresh(); // Refresca la lista en el componente padre
+            onClose();   // Cierra el modal
+        } catch (error: any) {
+            console.error("Error al actualizar:", error);
+            alert(error.message || "Hubo un error al intentar actualizar al operador.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -188,12 +209,12 @@ export const OperatorDetailView = ({ user, isEdit, onClose, onRefresh }: any) =>
             {isEdit ? (
                 <Stack spacing={2}>
                     <TextField
-                        fullWidth label="Nombre" size="small"
+                        fullWidth label="Nombre" size="small" disabled={isSaving}
                         value={form.firstName}
                         onChange={e => setForm({...form, firstName: e.target.value})}
                     />
                     <TextField
-                        fullWidth label="Apellido" size="small"
+                        fullWidth label="Apellido" size="small" disabled={isSaving}
                         value={form.lastName}
                         onChange={e => setForm({...form, lastName: e.target.value})}
                     />
@@ -201,9 +222,10 @@ export const OperatorDetailView = ({ user, isEdit, onClose, onRefresh }: any) =>
                         onClick={handleSave}
                         variant="contained"
                         fullWidth
+                        disabled={isSaving}
                         sx={{ mt: 1, bgcolor: '#0d47a1', textTransform: 'none', fontWeight: 700 }}
                     >
-                        Guardar Cambios
+                        {isSaving ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
                     </Button>
                 </Stack>
             ) : (

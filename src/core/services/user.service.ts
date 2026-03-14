@@ -3,6 +3,7 @@
 import type {UpdateUserDto} from "../../shared/dtos/update-user.dto.ts";
 import type { CreateUserDto } from "../../shared/dtos/create-user.dto.ts";
 
+
 export interface UserStaffDto {
     id: number;
     email: string;
