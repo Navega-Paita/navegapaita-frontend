@@ -13,11 +13,19 @@ export const OperationStatus = {
 
 export type OperationStatusType = typeof OperationStatus[keyof typeof OperationStatus];
 
+export interface OperationLog {
+    id: number;
+    action: string;
+    reason: string | null;
+    createdAt: string;
+    actor?: User | null; // El pescador o usuario que generó el evento
+}
+
 export interface Operation {
     id: number;
     tourName: string;
     status: OperationStatusType; // Usamos el tipo derivado
-    rejectionReason?: string | null;
+    logs?: OperationLog[];
     dateTime: string;
     fisherman?: User | null; // Cambiado any por User
     vessel?: Vessel | null;   // Cambiado any por Vessel

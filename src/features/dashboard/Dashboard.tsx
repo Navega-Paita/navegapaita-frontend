@@ -6,12 +6,13 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, MenuItem, Stack,
     List,
-    ListItem, ListItemText
+    ListItem, ListItemText, CircularProgress
 } from '@mui/material';
 import {
     AddCircle as AddCircleIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
+    History as HistoryIcon,
     ChatBubbleOutline as ChatIcon,
     Send as SendIcon,
     DirectionsBoat as BoatIcon,
@@ -31,6 +32,7 @@ import { ChatWindow } from "../chat/ChatWindow.tsx";
 import type { SignalAlert, SignalAlertsMap} from "../../shared/models/signalAlert.ts";
 import { OperationModal} from "./OperationModal.tsx";
 import Grid from "@mui/material/Grid";
+import { OperationHistoryDialog } from "./OperationHistoryDialog.tsx";
 
 export const Dashboard: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,6 +51,9 @@ export const Dashboard: React.FC = () => {
         opName: ''
     });
     const [selectedVesselId, setSelectedVesselId] = useState<string>('');
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const [selectedOp, setSelectedOp] = useState<Operation | null>(null);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
     const handleOpenAssign = (id: number, tourName: string) => {
         setVesselModal({
@@ -58,14 +63,27 @@ export const Dashboard: React.FC = () => {
         });
     };
 
+    const handleViewLogs = async (operation: Operation) => {
+        setIsLoadingLogs(true);
+        try {
+            // Llamamos al servicio para obtener la op con sus logs frescos
+            const fullOp = await operationService.getById(operation.id);
+            setSelectedOp(fullOp);
+            setHistoryOpen(true);
+        } catch (error) {
+            console.error("Error al cargar historial:", error);
+        } finally {
+            setIsLoadingLogs(false);
+        }
+    };
+
     const handleDelete = async (id: number) => {
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta operación? Esta acción no se puede deshacer.");
         if (confirmed) {
             try {
-                // Aquí llamarías a operationService.delete(id) cuando lo tengas
                 console.log("Eliminando operación:", id);
-                // await operationService.delete(id);
-                // toast.success("Operación eliminada");
+                await operationService.delete(id);
+                toast.success("Operación eliminada");
             } catch (error: any) {
                 console.error(error.message);
             }
@@ -214,8 +232,13 @@ export const Dashboard: React.FC = () => {
             }
         });
 
+        socketService.onOperationDeleted((deletedId) => {
+            setOperations((prev) => prev.filter(op => op.id !== deletedId));
+        });
+
         return () => {
             socketService.socket.off('operationUpdate');
+            socketService.socket.off('operationDeleted');
             socketService.socket.off('resourceStatusUpdate');
         };
     }, []);
@@ -337,6 +360,18 @@ export const Dashboard: React.FC = () => {
                                             )}
                                         </TableCell>
                                         <TableCell align="right">
+                                            <IconButton
+                                                size="small"
+                                                disabled={isLoadingLogs}
+                                                onClick={() => handleViewLogs(op)}
+                                                sx={{ color: '#141d38', mr: 0.5 }}
+                                            >
+                                                {isLoadingLogs && selectedOp?.id === op.id ? (
+                                                    <CircularProgress size={20} color="inherit" />
+                                                ) : (
+                                                    <HistoryIcon fontSize="small" />
+                                                )}
+                                            </IconButton>
                                             <IconButton size="small" onClick={() => handleEdit(op)}><EditIcon fontSize="small" /></IconButton>
                                             <IconButton size="small" color="error" onClick={() => handleDelete(op.id)}><DeleteIcon fontSize="small" /></IconButton>
                                         </TableCell>
@@ -406,6 +441,12 @@ export const Dashboard: React.FC = () => {
                     onClose={() => setActiveChatId(null)}
                 />
             )}
+
+            <OperationHistoryDialog
+                open={historyOpen}
+                onClose={() => setHistoryOpen(false)}
+                operation={selectedOp}
+            />
 
             <Dialog
                 open={vesselModal.open}

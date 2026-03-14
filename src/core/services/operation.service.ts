@@ -61,6 +61,12 @@ export const operationService = {
         await fetch(`${API_URL}/operations/${id}`, { method: 'DELETE' });
     },
 
+    async getById(id: number): Promise<Operation> {
+        const response = await fetch(`${API_URL}/operations/${id}`);
+        if (!response.ok) throw new Error('Error al obtener el detalle de la operación');
+        return response.json();
+    },
+
     // Retorna los pescadores con su perfil (DNI, status, etc.)
     async getFishermen(): Promise<User[]> {
         const response = await fetch(`${API_URL}/users/fishermen`);

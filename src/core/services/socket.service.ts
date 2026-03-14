@@ -23,6 +23,10 @@ class SocketService {
         this.socket.on('resourceStatusUpdate', callback);
     }
 
+    onOperationDeleted(callback: (id: number) => void) {
+        this.socket.on('operationDeleted', callback);
+    }
+
     disconnect() {
         this.socket.disconnect();
     }
