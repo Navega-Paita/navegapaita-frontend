@@ -34,6 +34,12 @@ import { OperationModal} from "./OperationModal.tsx";
 import Grid from "@mui/material/Grid";
 import { OperationHistoryDialog } from "./OperationHistoryDialog.tsx";
 
+const STATUS_COLORS = {
+    AVAILABLE: '#4caf50', // Verde
+    BUSY: '#ff9800',      // Naranja/Amarillo
+    OFFLINE: '#9e9e9e',   // Gris
+};
+
 export const Dashboard: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [operations, setOperations] = useState<Operation[]>([]);
@@ -401,9 +407,18 @@ export const Dashboard: React.FC = () => {
                                             <ListItemText
                                                 primary={f.firstName}
                                                 secondary={
-                                                    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: f.fishermanProfile?.status === 'AVAILABLE' ? '#4caf50' : '#ff9800' }} />
-                                                        {f.fishermanProfile?.status}
+                                                    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Box
+                                                            sx={{
+                                                                width: 8,
+                                                                height: 8,
+                                                                borderRadius: '50%',
+                                                                bgcolor: STATUS_COLORS[f.fishermanProfile?.status as keyof typeof STATUS_COLORS] || STATUS_COLORS.OFFLINE
+                                                            }}
+                                                        />
+                                                        <Typography variant="caption" sx={{ fontWeight: 'medium', color: 'text.secondary' }}>
+                                                            {f.fishermanProfile?.status || 'OFFLINE'}
+                                                        </Typography>
                                                     </Box>
                                                 }
                                             />
