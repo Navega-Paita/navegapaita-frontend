@@ -11,34 +11,44 @@ import {
     CircularProgress
 } from '@mui/material';
 import { operationService } from "../../core/services/operation.service";
+// src/modules/operations/components/OperationModal.tsx
+import type { Operation } from "../../shared/models/operation.model";
 
 interface Props {
     open: boolean;
     onClose: () => void;
-    onSuccess: (newOp: any) => void;
+    onSuccess: (op: Operation) => void;
+    operationToEdit?: Operation | null; // <-- Nueva prop
 }
 
-export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
-    // Estado para la carga y errores
+export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess, operationToEdit }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Estado del formulario
     const [form, setForm] = useState({
         tourName: '',
-        dateTime: new Date().toISOString().slice(0, 16),
+        dateTime: '',
     });
 
-    // Limpiar el formulario y errores cuando el modal se abre/cierra
+    // Efecto para detectar si estamos editando o creando
     useEffect(() => {
         if (open) {
-            setForm({
-                tourName: '',
-                dateTime: new Date().toISOString().slice(0, 16),
-            });
+            if (operationToEdit) {
+                // Modo Edición: Cargamos data existente
+                setForm({
+                    tourName: operationToEdit.tourName,
+                    dateTime: new Date(operationToEdit.dateTime).toISOString().slice(0, 16),
+                });
+            } else {
+                // Modo Creación: Resetear a valores por defecto
+                setForm({
+                    tourName: '',
+                    dateTime: new Date().toISOString().slice(0, 16),
+                });
+            }
             setError(null);
         }
-    }, [open]);
+    }, [open, operationToEdit]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,55 +56,42 @@ export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
         setLoading(true);
 
         try {
-            // Validamos que el nombre no esté vacío (espacios en blanco)
-            if (!form.tourName.trim()) {
-                throw new Error("El nombre del tour es obligatorio");
-            }
-
             const payload = {
                 tourName: form.tourName,
                 dateTime: new Date(form.dateTime).toISOString()
             };
 
-            const result = await operationService.create(payload);
+            let result;
+            if (operationToEdit) {
+                result = await operationService.update(operationToEdit.id, payload);
+            } else {
+                result = await operationService.create(payload);
+            }
 
             onSuccess(result);
             onClose();
         } catch (err: any) {
-            // Capturamos el mensaje de error del backend o del throw manual
-            setError(err.message || "Ocurrió un error al crear la operación");
+            setError(err.message || "Error al procesar la operación");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Dialog
-            open={open}
-            onClose={loading ? undefined : onClose} // Evita cerrar mientras guarda
-            fullWidth
-            maxWidth="xs"
-        >
-            <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
-                🚢 Nueva Operación Turística
+        <Dialog open={open} onClose={loading ? undefined : onClose} fullWidth maxWidth="xs">
+            <DialogTitle sx={{ fontWeight: 'bold' }}>
+                {operationToEdit ? '📝 Editar Operación' : '🚢 Nueva Operación'}
             </DialogTitle>
 
             <form onSubmit={handleSubmit}>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-
-                        {error && (
-                            <Alert severity="error" variant="filled" sx={{ mb: 1 }}>
-                                {error}
-                            </Alert>
-                        )}
+                        {error && <Alert severity="error">{error}</Alert>}
 
                         <TextField
                             label="Nombre del Tour"
-                            placeholder="Ej: Tour Islas Ballestas"
                             required
                             fullWidth
-                            autoFocus
                             value={form.tourName}
                             onChange={(e) => setForm({ ...form, tourName: e.target.value })}
                             disabled={loading}
@@ -114,29 +111,20 @@ export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
                 </DialogContent>
 
                 <DialogActions sx={{ p: 2, bgcolor: '#f9f9f9' }}>
-                    <Button
-                        onClick={onClose}
-                        disabled={loading}
-                        color="inherit"
-                    >
+                    <Button onClick={onClose} disabled={loading} color="inherit">
                         Cancelar
                     </Button>
                     <Button
                         type="submit"
                         variant="contained"
                         disabled={loading}
-                        startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
-                        sx={{
-                            backgroundColor: '#2e7d32',
-                            '&:hover': { backgroundColor: '#1b5e20' }
-                        }}
+                        sx={{ bgcolor: operationToEdit ? '#1976d2' : '#2e7d32' }}
                     >
-                        {loading ? 'Guardando...' : 'Crear Operación'}
+                        {loading ? 'Guardando...' : operationToEdit ? 'Actualizar' : 'Crear'}
                     </Button>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-
 

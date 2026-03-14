@@ -67,6 +67,21 @@ export const operationService = {
         return response.json();
     },
 
+    async update(id: number, data: { tourName: string; dateTime: string }): Promise<Operation> {
+        const response = await fetch(`${API_URL}/operations/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al actualizar');
+        }
+
+        return response.json();
+    },
+
     // Retorna los pescadores con su perfil (DNI, status, etc.)
     async getFishermen(): Promise<User[]> {
         const response = await fetch(`${API_URL}/users/fishermen`);

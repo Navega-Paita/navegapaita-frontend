@@ -54,6 +54,7 @@ export const Dashboard: React.FC = () => {
     const [historyOpen, setHistoryOpen] = useState(false);
     const [selectedOp, setSelectedOp] = useState<Operation | null>(null);
     const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+    const [operationToEdit, setOperationToEdit] = useState<Operation | null>(null);
 
     const handleOpenAssign = (id: number, tourName: string) => {
         setVesselModal({
@@ -91,10 +92,13 @@ export const Dashboard: React.FC = () => {
     };
 
     const handleEdit = (operation: Operation) => {
-        console.log("Editando operación:", operation);
-        // Aquí abrirías el modal de edición pasando los datos de la operación actual
-        // setSelectedOperation(operation);
-        // setIsEditModalOpen(true);
+        setOperationToEdit(operation); // Guardamos la op a editar
+        setIsModalOpen(true);          // Reutilizamos el mismo estado del modal
+    };
+
+    const handleOpenCreate = () => {
+        setOperationToEdit(null);      // Limpiamos por si veníamos de editar
+        setIsModalOpen(true);
     };
 
     useEffect(() => {
@@ -511,9 +515,13 @@ export const Dashboard: React.FC = () => {
 
             <OperationModal
                 open={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSuccess={(newOp) => {
-                    toast.success("Operación creada y asignada correctamente");
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setOperationToEdit(null); // Limpiar al cerrar
+                }}
+                operationToEdit={operationToEdit}
+                onSuccess={(updatedOp) => {
+                    toast.success(operationToEdit ? "Operación actualizada" : "Operación creada");
                 }}
             />
         </Box>
