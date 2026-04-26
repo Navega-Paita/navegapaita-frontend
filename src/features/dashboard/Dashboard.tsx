@@ -5,7 +5,7 @@ import {
     IconButton, Card, CardContent, Divider, Avatar,
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, MenuItem, Stack,
-    List,
+    List, Tooltip,
     ListItem, ListItemText, CircularProgress
 } from '@mui/material';
 import {
@@ -68,6 +68,29 @@ export const Dashboard: React.FC = () => {
             opId: id,
             opName: tourName
         });
+    };
+
+    const checkVesselOnBreak = (vessel, operations, currentOpId) => {
+        const operation = operations.find(op => op.id === currentOpId);
+        if (!operation || !vessel.owner?.availabilityExceptions) return null;
+
+        // 1. Convertimos la fecha de la operación y quitamos horas
+        const opDate = new Date(operation.dateTime);
+        const opDayTime = new Date(opDate.getFullYear(), opDate.getMonth(), opDate.getDate()).getTime();
+
+        // 2. Buscamos en las excepciones del dueño
+        const conflict = vessel.owner.availabilityExceptions.find(ex => {
+            const start = new Date(ex.startDate);
+            const end = new Date(ex.endDate);
+
+            // Normalizamos inicio y fin a medianoche para que la comparación sea exacta por día
+            const startDay = new Date(start.getFullYear(), start.month ? start.getMonth() : start.getUTCMonth(), start.getDate()).getTime();
+            const endDay = new Date(end.getFullYear(), end.month ? end.getMonth() : end.getUTCMonth(), end.getDate()).getTime();
+
+            return opDayTime >= startDay && opDayTime <= endDay;
+        });
+
+        return conflict ? conflict.reason : null;
     };
 
     const handleViewLogs = async (operation: Operation) => {
@@ -200,6 +223,7 @@ export const Dashboard: React.FC = () => {
                 setOperations(ops);
                 setFishermen(fish);
                 setVessels(ves);
+                console.log(ves)
             } catch (error) {
                 console.error("Error cargando datos iniciales:", error);
             }
@@ -469,39 +493,85 @@ export const Dashboard: React.FC = () => {
 
             <Dialog
                 open={vesselModal.open}
-                onClose={() => setVesselModal({ ...vesselModal, open: false })}
+                onClose={() => {
+                    setVesselModal({ ...vesselModal, open: false });
+                    setSelectedVesselId(''); // Limpiar al cerrar
+                }}
                 fullWidth
                 maxWidth="xs"
             >
-                <DialogTitle sx={{ fontWeight: 'bold' }}>
+                <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
                     🚢 Asignar Embarcación
                 </DialogTitle>
                 <DialogContent>
-                    <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
                         Tour: <strong>{vesselModal.opName}</strong>
-                    </p>
+                    </Typography>
 
                     <TextField
                         select
                         fullWidth
                         label="Asignar Embarcación (Operativas)"
                         required
-                        // Usamos el estado que ya tienes definido: selectedVesselId
                         value={selectedVesselId}
                         onChange={(e) => setSelectedVesselId(e.target.value)}
-                        helperText={vessels.filter(v => v.status === 'OPERATIVE').length === 0 ? "No hay embarcaciones operativas" : ""}
+                        // Evitamos que se seleccione una lancha en descanso si por algún motivo llegara al estado
+                        error={!!selectedVesselId && checkVesselOnBreak(vessels.find(v => String(v.id) === selectedVesselId), operations, vesselModal.opId)}
                     >
                         {vessels
                             .filter(v => v.status === 'OPERATIVE')
-                            .map((v) => (
-                                // Importante: value como String para que coincida con el estado selectedVesselId
-                                <MenuItem key={v.id} value={String(v.id)}>
-                                    {v.name} ({v.registrationNumber})
-                                </MenuItem>
-                            ))}
+                            .map((v) => {
+                                const breakReason = checkVesselOnBreak(v, operations, vesselModal.opId);
+                                const onBreak = breakReason !== null;
+
+                                return (
+                                    <MenuItem
+                                        key={v.id}
+                                        value={String(v.id)}
+                                        disabled={onBreak}
+                                        sx={{
+                                            py: 1.5,
+                                            borderBottom: '1px solid #f0f0f0',
+                                            '&.Mui-disabled': {
+                                                backgroundColor: '#fff5f5',
+                                                opacity: 0.8
+                                            }
+                                        }}
+                                    >
+                                        <Tooltip
+                                            title={onBreak ? `No disponible: ${breakReason}` : ""}
+                                            placement="right"
+                                            arrow
+                                        >
+                                            <Box sx={{ width: '100%' }}>
+                                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                                    <Box>
+                                                        <Typography variant="subtitle2" sx={{ fontWeight: onBreak ? 'normal' : 'bold' }}>
+                                                            {v.name}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="textSecondary">
+                                                            Matrícula: {v.registrationNumber}
+                                                        </Typography>
+                                                    </Box>
+
+                                                    {onBreak && (
+                                                        <Chip
+                                                            size="small"
+                                                            label="En Descanso 💤"
+                                                            color="error"
+                                                            variant="outlined"
+                                                            sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+                                                        />
+                                                    )}
+                                                </Stack>
+                                            </Box>
+                                        </Tooltip>
+                                    </MenuItem>
+                                );
+                            })}
                     </TextField>
                 </DialogContent>
-                <DialogActions sx={{ p: 2, bgcolor: '#f5f5f5' }}>
+                <DialogActions sx={{ p: 2, bgcolor: '#f8fafc' }}>
                     <Button onClick={() => setVesselModal({ ...vesselModal, open: false })}>
                         Cancelar
                     </Button>
@@ -511,17 +581,15 @@ export const Dashboard: React.FC = () => {
                         disabled={!selectedVesselId}
                         onClick={async () => {
                             try {
-                                // Usamos vesselModal.opId que guardamos al abrir el modal
                                 await operationService.sendRequest(Number(vesselModal.opId), Number(selectedVesselId));
-
-                                // Limpiamos y cerramos
                                 setVesselModal({ ...vesselModal, open: false });
                                 setSelectedVesselId('');
                                 toast.success("Solicitud enviada correctamente");
                             } catch (err: any) {
-                                alert(err.message);
+                                toast.error(err.message);
                             }
                         }}
+                        sx={{ fontWeight: 'bold', textTransform: 'none' }}
                     >
                         🚀 Enviar Solicitud
                     </Button>
