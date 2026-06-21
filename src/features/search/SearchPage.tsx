@@ -75,7 +75,14 @@ export default function SearchPage() {
     };
 
     return (
-        <Box className="search-page">
+        /* Se añade minHeight al contenedor principal.
+          'calc(100vh - 200px)' estira el contenedor al alto de la pantalla,
+          restando un aproximado de lo que miden tu Navbar y Footer juntos.
+        */
+        <Box
+            className="search-page"
+            sx={{ minHeight: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+        >
             {/* Breadcrumb */}
             <Breadcrumbs className="breadcrumb">
                 <Link href="/" sx={{ textDecoration: 'none', color: 'inherit' }}>Home</Link>
@@ -98,7 +105,8 @@ export default function SearchPage() {
 
             {/* Grid */}
             {loading ? (
-                <Box display="flex" justifyContent="center" py={10}>
+                /* FlexGrow asegura que el spinner empuje el footer hacia abajo mientras carga */
+                <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1} py={10}>
                     <CircularProgress />
                 </Box>
             ) : (
@@ -113,7 +121,8 @@ export default function SearchPage() {
                                     md: 'repeat(3, 1fr)'
                                 },
                                 gap: 3,
-                                width: '100%'
+                                width: '100%',
+                                flexGrow: 1 // Si hay pocas cards, mantiene el espacio ocupado
                             }}
                         >
                             {data.items.map(exp => (
@@ -123,7 +132,8 @@ export default function SearchPage() {
                             ))}
                         </Box>
                     ) : (
-                        <Box textAlign="center" py={10}>
+                        /* FlexGrow asegura que el mensaje "no resultados" empuje el footer hacia abajo */
+                        <Box display="flex" flexDirection="column" justifyContent="center" textAlign="center" flexGrow={1} py={10} >
                             <Typography variant="h6" color="text.secondary">
                                 No se encontraron experiencias con esos filtros.
                             </Typography>
