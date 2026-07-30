@@ -1,6 +1,6 @@
-import type {CreatePackageDto} from "../../shared/dtos/package.dto.ts";
 import type { PackageCardDto } from "../../shared/dtos/package-card.dto.ts";
-import type {PackageDetailDto} from "../../shared/dtos/package-detail.dto.ts";
+import type { PackageDetailDto } from "../../shared/dtos/package-detail.dto.ts";
+import type { Package } from "../../shared/models/package.ts";
 
 interface PaginatedResponse {
     items: PackageCardDto[];
@@ -19,7 +19,7 @@ const API_URL = 'http://localhost:3000';
 
 export const packageService = {
 
-    createPackage: async (packageDto: CreatePackageDto): Promise<PackageCardDto> => {
+    createPackage: async (packageDto: any): Promise<PackageCardDto> => {
         const response = await fetch(`${API_URL}/packages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -62,6 +62,34 @@ export const packageService = {
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Error en la búsqueda');
+        }
+
+        return await response.json();
+    },
+
+    // 🟢 Obtener todos los paquetes para el panel de administración usando la interfaz real Package
+    getAllPackagesAdmin: async (): Promise<Package[]> => {
+        const response = await fetch(`${API_URL}/packages/admin/all`);
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'No se pudo cargar la lista de paquetes para administrador');
+        }
+
+        return await response.json();
+    },
+
+    // 🟢 Actualizar la visibilidad o el estado activo/inactivo (Soft Delete / Restauración / Ocultar)
+    updatePackageStatus: async (packageId: number, status: { isVisible?: boolean; isActive?: boolean }): Promise<Package> => {
+        const response = await fetch(`${API_URL}/packages/${packageId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(status),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'No se pudo actualizar el estado del paquete');
         }
 
         return await response.json();

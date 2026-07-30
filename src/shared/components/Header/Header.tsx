@@ -110,6 +110,7 @@ export default function Header() {
             return [
                 { text: 'Dashboard', path: '/dashboard' },
                 { text: 'Embarcaciones', path: '/embarcaciones' },
+                { text: 'Paquetes', path: '/paquetes' },
                 { text: 'Usuarios', path: '/usuarios' },
                 { text: 'Monitoreo', path: '/monitoreo' },
             ];
@@ -119,6 +120,7 @@ export default function Header() {
             return [
                 { text: 'Dashboard', path: '/dashboard' },
                 { text: 'Embarcaciones', path: '/embarcaciones' },
+                { text: 'Paquetes', path: '/paquetes' },
                 { text: 'Monitoreo', path: '/monitoreo' },
             ];
         }

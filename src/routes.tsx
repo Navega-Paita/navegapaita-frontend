@@ -21,6 +21,7 @@ import {PublicRoute} from "./core/guards/PublicRoute.tsx";
 import ProfilePage from "./features/profile/profilePage.tsx";
 import UserManagementPage from "./features/UserManagement/UserManagementPage.tsx";
 import VesselsPage from "./features/vessels/VesselsPage.tsx";
+import PackagesPage from "./features/packages/PackagesPage.tsx";
 
 export default function AppRoutes() {
     return (
@@ -61,6 +62,7 @@ export default function AppRoutes() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/embarcaciones" element={<VesselsPage />} />
                     <Route path="/crear-paquete" element={<PackageCreatePage />} />
+                    <Route path="/paquetes" element={<PackagesPage />} />
                     <Route path="/monitoreo" element={
                         <div style={{ padding: '20px' }}>
                             <h1>Panel de Monitoreo de Embarcaciones</h1>

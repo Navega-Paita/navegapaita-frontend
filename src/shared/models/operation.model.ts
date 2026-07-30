@@ -18,15 +18,24 @@ export interface OperationLog {
     action: string;
     reason: string | null;
     createdAt: string;
-    actor?: User | null; // El pescador o usuario que generó el evento
+    actor?: User | null;
+}
+
+// 🟢 Interfaz ligera del paquete en la operación
+export interface OperationPackage {
+    id: number;
+    title: string;
+    price?: number;
+    duration?: string;
 }
 
 export interface Operation {
     id: number;
     tourName: string;
-    status: OperationStatusType; // Usamos el tipo derivado
+    status: OperationStatusType;
     logs?: OperationLog[];
     dateTime: string;
-    fisherman?: User | null; // Cambiado any por User
-    vessel?: Vessel | null;   // Cambiado any por Vessel
+    fisherman?: User | null;
+    vessel?: Vessel | null;
+    package?: OperationPackage | null; // 🟢 Añadido aquí
 }

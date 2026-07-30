@@ -1,3 +1,4 @@
+// src/modules/operations/components/OperationModal.tsx
 import React, { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -8,42 +9,49 @@ import {
     TextField,
     Box,
     Alert,
-    CircularProgress
+    MenuItem
 } from '@mui/material';
-import { operationService } from "../../core/services/operation.service";
-// src/modules/operations/components/OperationModal.tsx
-import type { Operation } from "../../shared/models/operation.model";
+import { operationService} from "../../core/services/operation.service.ts";
+import { packageService } from "../../core/services/package.service"; // 🟢 Importar packageService
+import type { Operation} from "../../shared/models/operation.model.ts";
+import type { Package } from "../../shared/models/package"; // 🟢 Importar tipo Package
 
 interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess: (op: Operation) => void;
-    operationToEdit?: Operation | null; // <-- Nueva prop
+    operationToEdit?: Operation | null;
 }
 
 export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess, operationToEdit }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [packages, setPackages] = useState<Package[]>([]); // 🟢 Estado para almacenar los paquetes
 
     const [form, setForm] = useState({
         tourName: '',
         dateTime: '',
+        packageId: 1, // 🟢 Valor por defecto 1
     });
 
-    // Efecto para detectar si estamos editando o creando
+    // Cargar paquetes al abrir el modal
     useEffect(() => {
         if (open) {
+            packageService.getAllPackagesAdmin()
+                .then((data) => setPackages(data))
+                .catch((err) => console.error("Error al cargar paquetes:", err));
+
             if (operationToEdit) {
-                // Modo Edición: Cargamos data existente
                 setForm({
                     tourName: operationToEdit.tourName,
                     dateTime: new Date(operationToEdit.dateTime).toISOString().slice(0, 16),
+                    packageId: operationToEdit.package?.id || 1, // 🟢 Cargar el paquete actual o 1 por defecto
                 });
             } else {
-                // Modo Creación: Resetear a valores por defecto
                 setForm({
                     tourName: '',
                     dateTime: new Date().toISOString().slice(0, 16),
+                    packageId: 1, // 🟢 Por defecto ID 1
                 });
             }
             setError(null);
@@ -58,7 +66,8 @@ export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess, oper
         try {
             const payload = {
                 tourName: form.tourName,
-                dateTime: new Date(form.dateTime).toISOString()
+                dateTime: new Date(form.dateTime).toISOString(),
+                packageId: Number(form.packageId), // 🟢 Enviar el packageId seleccionado
             };
 
             let result;
@@ -78,7 +87,7 @@ export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess, oper
     };
 
     return (
-        <Dialog open={open} onClose={loading ? undefined : onClose} fullWidth maxWidth="xs">
+        <Dialog open={open} onClose={loading ? undefined : onClose} fullWidth maxWidth="sm">
             <DialogTitle sx={{ fontWeight: 'bold' }}>
                 {operationToEdit ? '📝 Editar Operación' : '🚢 Nueva Operación'}
             </DialogTitle>
@@ -107,6 +116,28 @@ export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess, oper
                             onChange={(e) => setForm({ ...form, dateTime: e.target.value })}
                             disabled={loading}
                         />
+
+                        {/* 🟢 Selector de Paquetes con información relevante */}
+                        <TextField
+                            select
+                            label="Paquete Asociado"
+                            required
+                            fullWidth
+                            value={form.packageId}
+                            onChange={(e) => setForm({ ...form, packageId: Number(e.target.value) })}
+                            disabled={loading}
+                        >
+                            {packages.map((pkg) => (
+                                <MenuItem key={pkg.id} value={pkg.id}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <span style={{ fontWeight: 500 }}>{pkg.title}</span>
+                                        <span style={{ fontSize: '0.75rem', color: '#666' }}>
+                                            Duración: {pkg.duration || 'N/D'} | Precio: ${pkg.price || 0}
+                                        </span>
+                                    </Box>
+                                </MenuItem>
+                            ))}
+                        </TextField>
                     </Box>
                 </DialogContent>
 
@@ -127,4 +158,3 @@ export const OperationModal: React.FC<Props> = ({ open, onClose, onSuccess, oper
         </Dialog>
     );
 };
-

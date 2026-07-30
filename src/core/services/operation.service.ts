@@ -15,6 +15,7 @@ export const operationService = {
     async create(data: {
         tourName: string;
         dateTime: string;
+        packageId?: number; // 🟢 Añadido
     }): Promise<Operation> {
         const response = await fetch(`${API_URL}/operations`, {
             method: 'POST',
@@ -26,7 +27,6 @@ export const operationService = {
 
         if (!response.ok) {
             const errorData = await response.json();
-            // NestJS devuelve un array de strings si fallan varias validaciones del DTO
             const message = Array.isArray(errorData.message)
                 ? errorData.message.join(', ')
                 : errorData.message;
@@ -67,7 +67,7 @@ export const operationService = {
         return response.json();
     },
 
-    async update(id: number, data: { tourName: string; dateTime: string }): Promise<Operation> {
+    async update(id: number, data: { tourName: string; dateTime: string; packageId?: number }): Promise<Operation> {
         const response = await fetch(`${API_URL}/operations/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },

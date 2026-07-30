@@ -17,6 +17,8 @@ export interface Package {
     imageGallery: CloudinaryImage[];
     itinerary: ItineraryItem[];
     availability: AvailabilityItem[];
+    isVisible: boolean; // Controla si se muestra públicamente
+    isActive: boolean;  // Controla el borrado pasivo (soft delete)
 }
 
 export interface ItineraryItem {

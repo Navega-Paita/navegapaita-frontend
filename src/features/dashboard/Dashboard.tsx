@@ -501,7 +501,7 @@ export const Dashboard: React.FC = () => {
                 maxWidth="xs"
             >
                 <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    🚢 Asignar Embarcación
+                    Asignar pescador
                 </DialogTitle>
                 <DialogContent>
                     <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
@@ -511,7 +511,7 @@ export const Dashboard: React.FC = () => {
                     <TextField
                         select
                         fullWidth
-                        label="Asignar Embarcación (Operativas)"
+                        label="Pescadores Disponibles"
                         required
                         value={selectedVesselId}
                         onChange={(e) => setSelectedVesselId(e.target.value)}
@@ -547,10 +547,10 @@ export const Dashboard: React.FC = () => {
                                                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                                                     <Box>
                                                         <Typography variant="subtitle2" sx={{ fontWeight: onBreak ? 'normal' : 'bold' }}>
-                                                            {v.name}
+                                                            {v.owner?.firstName+" "+v.owner?.lastName}
                                                         </Typography>
                                                         <Typography variant="caption" color="textSecondary">
-                                                            Matrícula: {v.registrationNumber}
+                                                            Embarcacion: {v.name}
                                                         </Typography>
                                                     </Box>
 
