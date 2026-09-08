@@ -63,12 +63,7 @@ export default function AppRoutes() {
                     <Route path="/embarcaciones" element={<VesselsPage />} />
                     <Route path="/crear-paquete" element={<PackageCreatePage />} />
                     <Route path="/paquetes" element={<PackagesPage />} />
-                    <Route path="/monitoreo" element={
-                        <div style={{ padding: '20px' }}>
-                            <h1>Panel de Monitoreo de Embarcaciones</h1>
-                            <FleetMap />
-                        </div>
-                    } />
+                    <Route path="/monitoreo" element={<FleetMap />} />
                     <Route path="/chat" element={
                         <ChatWindow operationId={1} onClose={() => {}} />
                     } />
