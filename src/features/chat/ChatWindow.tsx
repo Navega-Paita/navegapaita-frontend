@@ -57,7 +57,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
     return (
         <div style={{
             position: 'fixed',
-            bottom: '20px',
+            bottom: '0px',
             right: '20px',
             width: '320px',
             height: '400px',

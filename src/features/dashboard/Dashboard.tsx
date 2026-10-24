@@ -47,6 +47,10 @@ export const Dashboard: React.FC = () => {
     const [vessels, setVessels] = useState<Vessel[]>([]);
     const alertAudio = new Audio(alertSound);
     const [activeChatId, setActiveChatId] = useState<number | null>(null);
+
+    // 🟢 Estado para almacenar los chats que tienen mensajes nuevos sin leer del pescador
+    const [unreadChats, setUnreadChats] = useState<Record<number, boolean>>({});
+
     const [vesselModal, setVesselModal] = useState<{
         open: boolean;
         opId: number | null;
@@ -70,22 +74,22 @@ export const Dashboard: React.FC = () => {
         });
     };
 
-    const checkVesselOnBreak = (vessel, operations, currentOpId) => {
-        const operation = operations.find(op => op.id === currentOpId);
-        if (!operation || !vessel.owner?.availabilityExceptions) return null;
+    const checkVesselOnBreak = (vessel: Vessel, operations: Operation[], currentOpId: number | null) => {
+        const operation = operations.find((op: Operation) => op.id === currentOpId);
 
-        // 1. Convertimos la fecha de la operación y quitamos horas
+        // Casteamos 'vessel.owner' como any para acceder de forma segura a availabilityExceptions sin alterar el modelo
+        const owner = vessel.owner as any;
+        if (!operation || !owner?.availabilityExceptions) return null;
+
         const opDate = new Date(operation.dateTime);
         const opDayTime = new Date(opDate.getFullYear(), opDate.getMonth(), opDate.getDate()).getTime();
 
-        // 2. Buscamos en las excepciones del dueño
-        const conflict = vessel.owner.availabilityExceptions.find(ex => {
+        const conflict = owner.availabilityExceptions.find((ex: any) => {
             const start = new Date(ex.startDate);
             const end = new Date(ex.endDate);
 
-            // Normalizamos inicio y fin a medianoche para que la comparación sea exacta por día
-            const startDay = new Date(start.getFullYear(), start.month ? start.getMonth() : start.getUTCMonth(), start.getDate()).getTime();
-            const endDay = new Date(end.getFullYear(), end.month ? end.getMonth() : end.getUTCMonth(), end.getDate()).getTime();
+            const startDay = new Date(start.getFullYear(), ex.month !== undefined ? ex.month : start.getMonth(), start.getDate()).getTime();
+            const endDay = new Date(end.getFullYear(), ex.month !== undefined ? ex.month : end.getMonth(), end.getDate()).getTime();
 
             return opDayTime >= startDay && opDayTime <= endDay;
         });
@@ -96,7 +100,6 @@ export const Dashboard: React.FC = () => {
     const handleViewLogs = async (operation: Operation) => {
         setIsLoadingLogs(true);
         try {
-            // Llamamos al servicio para obtener la op con sus logs frescos
             const fullOp = await operationService.getById(operation.id);
             setSelectedOp(fullOp);
             setHistoryOpen(true);
@@ -111,7 +114,6 @@ export const Dashboard: React.FC = () => {
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta operación? Esta acción no se puede deshacer.");
         if (confirmed) {
             try {
-                console.log("Eliminando operación:", id);
                 await operationService.delete(id);
                 toast.success("Operación eliminada");
             } catch (error: any) {
@@ -121,25 +123,71 @@ export const Dashboard: React.FC = () => {
     };
 
     const handleEdit = (operation: Operation) => {
-        setOperationToEdit(operation); // Guardamos la op a editar
-        setIsModalOpen(true);          // Reutilizamos el mismo estado del modal
+        setOperationToEdit(operation);
+        setIsModalOpen(true);
     };
 
     const handleOpenCreate = () => {
-        setOperationToEdit(null);      // Limpiamos por si veníamos de editar
+        setOperationToEdit(null);
         setIsModalOpen(true);
     };
+
+    // 🟢 EFECTO PARA ESCUCHAR MENSAJES NUEVOS EN TIEMPO REAL EN LOS CHATS ACTIVOS
+    useEffect(() => {
+        if (operations.length === 0) return;
+
+        const unsubscribes: (() => void)[] = [];
+
+        operations.forEach((op) => {
+            // Escuchamos únicamente operaciones confirmadas o en curso
+            if (['CONFIRMED', 'IN_PROGRESS'].includes(op.status)) {
+                const chatRef = ref(db, `operation_chats/${op.id}/messages`);
+
+                const unsubscribe = onValue(chatRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const messages = Object.values(data) as any[];
+                        const lastMessage = messages[messages.length - 1];
+
+                        // Si el último mensaje fue enviado por el pescador y el chat no está abierto actualmente
+                        if (lastMessage && lastMessage.sender === 'FISHERMAN') {
+                            // Validar que el mensaje sea reciente para no disparar alertas retroactivas al cargar
+                            const isRecent = lastMessage.timestamp && (Date.now() - lastMessage.timestamp < 10000);
+
+                            if (isRecent && activeChatId !== op.id) {
+                                // Reproducir beep sutil de notificación
+                                const chatAudio = new Audio(alertSound);
+                                chatAudio.play().catch(() => {});
+
+                                toast(`💬 Nuevo mensaje de ${op.fisherman?.firstName || 'Pescador'} en: ${op.tourName}`, {
+                                    position: 'bottom-right',
+                                    duration: 4000,
+                                });
+
+                                // Marcar con indicador de no leído
+                                setUnreadChats((prev) => ({ ...prev, [op.id]: true }));
+                            }
+                        }
+                    }
+                });
+
+                unsubscribes.push(unsubscribe);
+            }
+        });
+
+        return () => {
+            unsubscribes.forEach((unsub) => unsub());
+        };
+    }, [operations, activeChatId]);
 
     useEffect(() => {
         const signalRef = ref(db, 'signal_alerts');
         const alertAudio = new Audio('/assets/sounds/emergency-beep.mp3');
 
         const unsubscribe = onValue(signalRef, (snapshot) => {
-            // Tipamos la data que viene de Firebase
             const alerts = snapshot.val() as SignalAlertsMap | null;
 
             if (alerts) {
-                // Ahora 'a' es reconocido como SignalAlert, eliminando el error de ESLint
                 const anyNew = Object.values(alerts).some((a: SignalAlert) =>
                     a.trigger > Date.now() - 10000
                 );
@@ -164,14 +212,10 @@ export const Dashboard: React.FC = () => {
         const unsubscribe = onValue(alertRef, (snapshot) => {
             const data = snapshot.val();
 
-            // Verificamos que el trigger sea reciente (últimos 5 segundos)
             if (data && data.trigger > Date.now() - 5000) {
-
-                // 1. Sonar alerta usando la constante externa
                 alertAudio.currentTime = 0;
                 alertAudio.play().catch(err => console.log("Audio esperando interacción del usuario."));
 
-                // 2. Mostrar notificación persistente con botón de cierre (X)
                 toast.error((t) => (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '220px' }}>
                     <span>
@@ -179,8 +223,8 @@ export const Dashboard: React.FC = () => {
                     </span>
                         <button
                             onClick={() => {
-                                alertAudio.pause(); // Detiene el sonido al cerrar
-                                toast.dismiss(t.id); // Cierra el toast específico
+                                alertAudio.pause();
+                                toast.dismiss(t.id);
                             }}
                             style={{
                                 background: 'transparent',
@@ -212,7 +256,6 @@ export const Dashboard: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        // 1. Carga inicial de datos
         const loadInitialData = async () => {
             try {
                 const [ops, fish, ves] = await Promise.all([
@@ -223,7 +266,6 @@ export const Dashboard: React.FC = () => {
                 setOperations(ops);
                 setFishermen(fish);
                 setVessels(ves);
-                console.log(ves)
             } catch (error) {
                 console.error("Error cargando datos iniciales:", error);
             }
@@ -231,7 +273,6 @@ export const Dashboard: React.FC = () => {
 
         loadInitialData();
 
-        // 2. Escuchar Sockets
         socketService.onOperationUpdate((updatedOp) => {
             setOperations((prev) => {
                 const index = prev.findIndex(op => op.id === updatedOp.id);
@@ -240,7 +281,7 @@ export const Dashboard: React.FC = () => {
                     newOps[index] = updatedOp;
                     return newOps;
                 }
-                return [updatedOp, ...prev]; // Si es nueva, arriba
+                return [updatedOp, ...prev];
             });
         });
 
@@ -253,7 +294,7 @@ export const Dashboard: React.FC = () => {
                             fishermanProfile: f.fishermanProfile
                                 ? {
                                     ...f.fishermanProfile,
-                                    status: data.status as FishermanStatus // <-- CASTING SEGURO
+                                    status: data.status as FishermanStatus
                                 }
                                 : undefined
                         }
@@ -277,7 +318,6 @@ export const Dashboard: React.FC = () => {
         };
     }, []);
 
-    // Helper para Renderizar Chips de Estado
     const renderStatusChip = (status: string) => {
         const colors: any = {
             'PENDING': { bg: '#fff3e0', text: '#ef6c00', label: 'Pendiente' },
@@ -294,7 +334,6 @@ export const Dashboard: React.FC = () => {
         <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f9fa', minHeight: '100vh' }}>
             <Toaster position="top-right" />
 
-            {/* HEADER DEL DASHBOARD */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, color: '#141d38' }}>
@@ -323,7 +362,6 @@ export const Dashboard: React.FC = () => {
             </Box>
 
             <Grid container spacing={3}>
-                {/* COLUMNA IZQUIERDA: TABLA */}
                 <Grid size={{ xs: 12, lg: 9 }}>
                     <TableContainer component={Paper} sx={{ borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
                         <Table>
@@ -356,41 +394,55 @@ export const Dashboard: React.FC = () => {
                                             </Stack>
                                         </TableCell>
                                         <TableCell align="center">
-                                            {/* Agregamos 'REJECTED' a la condición principal */}
                                             {['PENDING', 'REQUESTED', 'REJECTED'].includes(op.status) ? (
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
-                                                    // Si es rechazado, usamos color 'error' para llamar la atención del operador
                                                     color={
                                                         op.status === 'REJECTED' ? "error" :
                                                             op.status === 'REQUESTED' ? "warning" : "primary"
                                                     }
-                                                    startIcon={
-                                                        op.status === 'REJECTED' ? <SyncIcon /> :
-                                                            op.status === 'REQUESTED' ? <SyncIcon /> : <SendIcon />
-                                                    }
+                                                    startIcon={<SyncIcon />}
                                                     onClick={() => handleOpenAssign(op.id, op.tourName)}
                                                     sx={{
                                                         borderRadius: '8px',
                                                         textTransform: 'none',
                                                         fontWeight: 600,
-                                                        // Si es rechazado, un borde un poco más grueso ayuda visualmente
                                                         borderWidth: op.status === 'REJECTED' ? 2 : 1,
-                                                        '&:hover': { borderWidth: op.status === 'REJECTED' ? 2 : 1 }
                                                     }}
                                                 >
                                                     {op.status === 'REJECTED' ? 'Reintentar' :
                                                         op.status === 'REQUESTED' ? 'Reenviar' : 'Solicitar'}
                                                 </Button>
                                             ) : (
-                                                <IconButton
-                                                    onClick={() => setActiveChatId(op.id)}
-                                                    disabled={!['CONFIRMED', 'IN_PROGRESS'].includes(op.status)}
-                                                    color="primary"
-                                                >
-                                                    <ChatIcon />
-                                                </IconButton>
+                                                /* 🟢 BOTÓN DE CHAT CON INDICADOR VISUAL (BADGE / PUNTO ROJO) */
+                                                <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                                                    <IconButton
+                                                        onClick={() => {
+                                                            setActiveChatId(op.id);
+                                                            // Al abrir el chat, limpiamos la alerta de no leído para esta operación
+                                                            setUnreadChats((prev) => ({ ...prev, [op.id]: false }));
+                                                        }}
+                                                        disabled={!['CONFIRMED', 'IN_PROGRESS'].includes(op.status)}
+                                                        color="primary"
+                                                    >
+                                                        <ChatIcon />
+                                                    </IconButton>
+                                                    {unreadChats[op.id] && (
+                                                        <span
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: 6,
+                                                                right: 6,
+                                                                width: 10,
+                                                                height: 10,
+                                                                backgroundColor: '#f44336',
+                                                                borderRadius: '50%',
+                                                                border: '2px solid white'
+                                                            }}
+                                                        />
+                                                    )}
+                                                </Box>
                                             )}
                                         </TableCell>
                                         <TableCell align="right">
@@ -416,10 +468,8 @@ export const Dashboard: React.FC = () => {
                     </TableContainer>
                 </Grid>
 
-                {/* COLUMNA DERECHA: RECURSOS */}
                 <Grid size={{ xs: 12, lg: 3 }}>
                     <Stack spacing={3}>
-                        {/* CARD PESCADORES */}
                         <Card sx={{ borderRadius: '15px', bgcolor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                             <CardContent>
                                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
@@ -452,7 +502,6 @@ export const Dashboard: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        {/* CARD EMBARCACIONES */}
                         <Card sx={{ borderRadius: '15px', bgcolor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                             <CardContent>
                                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
@@ -495,7 +544,7 @@ export const Dashboard: React.FC = () => {
                 open={vesselModal.open}
                 onClose={() => {
                     setVesselModal({ ...vesselModal, open: false });
-                    setSelectedVesselId(''); // Limpiar al cerrar
+                    setSelectedVesselId('');
                 }}
                 fullWidth
                 maxWidth="xs"
@@ -515,7 +564,6 @@ export const Dashboard: React.FC = () => {
                         required
                         value={selectedVesselId}
                         onChange={(e) => setSelectedVesselId(e.target.value)}
-                        // Evitamos que se seleccione una lancha en descanso si por algún motivo llegara al estado
                         error={!!selectedVesselId && checkVesselOnBreak(vessels.find(v => String(v.id) === selectedVesselId), operations, vesselModal.opId)}
                     >
                         {vessels
@@ -600,7 +648,7 @@ export const Dashboard: React.FC = () => {
                 open={isModalOpen}
                 onClose={() => {
                     setIsModalOpen(false);
-                    setOperationToEdit(null); // Limpiar al cerrar
+                    setOperationToEdit(null);
                 }}
                 operationToEdit={operationToEdit}
                 onSuccess={(updatedOp) => {
