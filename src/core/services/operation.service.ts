@@ -94,5 +94,17 @@ export const operationService = {
         const response = await fetch(`${API_URL}/vessels`);
         if (!response.ok) throw new Error('Error al cargar embarcaciones');
         return response.json();
-    }
+    },
+
+    async sendChatNotification(id: number, message: string): Promise<void> {
+        const response = await fetch(`${API_URL}/operations/${id}/chat-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+        });
+
+        if (!response.ok) {
+            console.error('Error al notificar push de chat');
+        }
+    },
 };

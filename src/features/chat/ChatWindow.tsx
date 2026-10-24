@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ref, onValue, push, serverTimestamp } from 'firebase/database';
-import {db} from "../../core/config/firebase.ts";
+import { db } from "../../core/config/firebase.ts";
+import { operationService } from '../../core/services/operation.service';
 
 interface Message {
     sender: 'FISHERMAN' | 'AGENCY';
@@ -16,7 +17,7 @@ interface ChatWindowProps {
 export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
-    const messagesEndRef = useRef<HTMLDivElement>(null); // Renombrado para claridad
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // 1. Escuchar mensajes en tiempo real
     useEffect(() => {
@@ -25,9 +26,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
         const unsubscribe = onValue(chatRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // Convertir objeto de Firebase a Array ordenado
+                // Convertir objeto de Firebase a Array ordenado (Corregido el sort)
                 const list = Object.values(data) as Message[];
-                setMessages(list.sort((a, b) => a.timestamp - b.timestamp));
+                setMessages(list.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)));
             }
         });
 
@@ -44,14 +45,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
         e.preventDefault();
         if (!inputText.trim()) return;
 
+        const currentText = inputText;
+        setInputText('');
+
+        // 1. Guardar en Firebase Realtime Database
         const chatRef = ref(db, `operation_chats/${operationId}/messages`);
         await push(chatRef, {
             sender: 'AGENCY',
-            text: inputText,
+            text: currentText,
             timestamp: serverTimestamp(),
         });
 
-        setInputText('');
+        // 2. Disparar Notificación Push al Pescador vía Backend
+        try {
+            await operationService.sendChatNotification(operationId, currentText);
+        } catch (error) {
+            console.error("Error al disparar la push notification:", error);
+        }
+    };
+
+    // Función auxiliar para formatear el timestamp a hora (ej: 03:45 p. m. o 15:45)
+    const formatTime = (timestamp: number) => {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -108,13 +125,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
                             alignSelf: isAgency ? 'flex-end' : 'flex-start',
                             backgroundColor: isAgency ? '#0084FF' : '#E4E6EB',
                             color: isAgency ? 'white' : 'black',
-                            padding: '8px 12px',
-                            borderRadius: '15px',
-                            maxWidth: '80%',
-                            fontSize: '14px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                            padding: '6px 10px 6px 12px', // Padding más compacto
+                            borderRadius: '14px',
+                            maxWidth: '85%',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                            display: 'flex',
+                            alignItems: 'flex-end', // Alinea el texto y la hora de manera horizontal
+                            gap: '8px', // Espacio sutil entre el texto y la hora
                         }}>
-                            {msg.text}
+                            {/* Texto del mensaje */}
+                            <span style={{ fontSize: '13px', wordBreak: 'break-word', flex: 1 }}>
+                {msg.text}
+            </span>
+
+                            {/* Hora sutil y pequeña al lado del texto */}
+                            <span style={{
+                                fontSize: '9.5px',
+                                color: isAgency ? 'rgba(255, 255, 255, 0.75)' : 'rgba(0, 0, 0, 0.45)',
+                                whiteSpace: 'nowrap',
+                                marginBottom: '1px', // Pequeño ajuste para alinear con la base del texto
+                            }}>
+                {formatTime(msg.timestamp)}
+            </span>
                         </div>
                     );
                 })}
@@ -148,7 +180,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ operationId, onClose }) 
                     borderRadius: '50%',
                     width: '35px',
                     height: '35px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}>➤</button>
             </form>
         </div>
