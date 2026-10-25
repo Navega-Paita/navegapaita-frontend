@@ -44,7 +44,7 @@ export const Dashboard: React.FC = () => {
     const [operations, setOperations] = useState<Operation[]>([]);
     const [fishermen, setFishermen] = useState<User[]>([]);
     const [vessels, setVessels] = useState<Vessel[]>([]);
-    const alertAudio = new Audio(alertSound);
+    const alertAudio = new Audio('/sounds/alert-sound.mp3');
     const [activeChatId, setActiveChatId] = useState<number | null>(null);
 
     // 🟢 Estado para almacenar los chats que tienen mensajes nuevos sin leer del pescador
