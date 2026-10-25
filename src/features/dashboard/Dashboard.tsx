@@ -560,11 +560,11 @@ export const Dashboard: React.FC = () => {
                     <TextField
                         select
                         fullWidth
-                        label="Pescadores Disponibles"
+                        label="Embarcaciones Disponibles"
                         required
                         value={selectedVesselId}
                         onChange={(e) => setSelectedVesselId(e.target.value)}
-                        error={!!selectedVesselId && checkVesselOnBreak(vessels.find(v => String(v.id) === selectedVesselId), operations, vesselModal.opId)}
+                        error={Boolean(selectedVesselId && checkVesselOnBreak(vessels.find(v => String(v.id) === selectedVesselId)!, operations, vesselModal.opId))}
                     >
                         {vessels
                             .filter(v => v.status === 'OPERATIVE')
@@ -595,10 +595,10 @@ export const Dashboard: React.FC = () => {
                                                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                                                     <Box>
                                                         <Typography variant="subtitle2" sx={{ fontWeight: onBreak ? 'normal' : 'bold' }}>
-                                                            {v.owner?.firstName+" "+v.owner?.lastName}
+                                                            {v.name}
                                                         </Typography>
                                                         <Typography variant="caption" color="textSecondary">
-                                                            Embarcacion: {v.name}
+                                                            Propietario: {v.owner?.firstName ? `${v.owner.firstName} ${v.owner.lastName || ''}` : 'Sin propietario'}
                                                         </Typography>
                                                     </Box>
 

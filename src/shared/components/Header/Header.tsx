@@ -80,8 +80,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-// Mapeo de iconos por path para el drawer
-const navIconMap: Record<string, JSX.Element> = {
+// Mapeo de iconos por path para el drawer corregido con React.ReactNode
+const navIconMap: Record<string, React.ReactNode> = {
     '/buscar': <SearchIcon />,
     '/sobre-paita': <Phone />,
     '/dashboard': <Dashboard />,
