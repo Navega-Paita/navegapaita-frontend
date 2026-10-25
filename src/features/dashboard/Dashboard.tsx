@@ -27,7 +27,6 @@ import type { Vessel } from "../../shared/models/vessel.model";
 import { ref, onValue } from "firebase/database";
 import { db } from "../../core/config/firebase.ts";
 import { toast, Toaster } from "react-hot-toast";
-import alertSound from '../../assets/sounds/alert-sound.mp3';
 import { ChatWindow } from "../chat/ChatWindow.tsx";
 import type { SignalAlert, SignalAlertsMap} from "../../shared/models/signalAlert.ts";
 import { OperationModal} from "./OperationModal.tsx";
@@ -156,7 +155,7 @@ export const Dashboard: React.FC = () => {
 
                             if (isRecent && activeChatId !== op.id) {
                                 // Reproducir beep sutil de notificación
-                                const chatAudio = new Audio(alertSound);
+                                const chatAudio = new Audio('/sounds/alert-sound.mp3');
                                 chatAudio.play().catch(() => {});
 
                                 toast(`💬 Nuevo mensaje de ${op.fisherman?.firstName || 'Pescador'} en: ${op.tourName}`, {
@@ -182,7 +181,7 @@ export const Dashboard: React.FC = () => {
 
     useEffect(() => {
         const signalRef = ref(db, 'signal_alerts');
-        const alertAudio = new Audio('/assets/sounds/emergency-beep.mp3');
+        const alertAudio = new Audio('/sounds/sounds/emergency-beep.mp3');
 
         const unsubscribe = onValue(signalRef, (snapshot) => {
             const alerts = snapshot.val() as SignalAlertsMap | null;
