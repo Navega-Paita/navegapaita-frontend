@@ -56,13 +56,11 @@ export default function DatesPricesSection({
         if (!selectedDate) return;
 
         // 🟢 VALIDACIÓN DE AUTENTICACIÓN
-        const token = localStorage.getItem('token'); // O 'userId', dependiendo de cómo guardes la sesión
+        // Validamos usando únicamente el userId que ya manejas
         const userId = localStorage.getItem('userId');
 
-        if (!token || !userId) {
-            alert("Debes iniciar sesión para realizar una reserva y procesar el pago.");
-            // Opcional: Redirigir al login
-            // window.location.href = '/login';
+        if (!userId) {
+            alert("Debes iniciar sesión para realizar una reserva.");
             return;
         }
 
