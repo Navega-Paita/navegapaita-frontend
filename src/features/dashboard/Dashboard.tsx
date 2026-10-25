@@ -181,7 +181,7 @@ export const Dashboard: React.FC = () => {
 
     useEffect(() => {
         const signalRef = ref(db, 'signal_alerts');
-        const alertAudio = new Audio('/sounds/sounds/emergency-beep.mp3');
+        const alertAudio = new Audio('/sounds/emergency-beep.mp3');
 
         const unsubscribe = onValue(signalRef, (snapshot) => {
             const alerts = snapshot.val() as SignalAlertsMap | null;
