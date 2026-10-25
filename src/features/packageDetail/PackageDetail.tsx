@@ -130,7 +130,7 @@ export default function PackageDetail() {
 
     // Cálculo de precio final para el sidebar (Lógica: price es el base)
     const hasDiscount = packageData.discount > 0;
-    const finalPrice = Math.round(packageData.price * (1 - packageData.discount / 100));
+    const finalPrice = packageData.price * (1 - packageData.discount / 100);
 
 
     return (
@@ -197,15 +197,6 @@ export default function PackageDetail() {
                             Ver fechas
                         </Button>
 
-                        {/* AQUÍ INTEGRAMOS EL BOTÓN DE MERCADO PAGO */}
-                        <MercadoPagoButton
-                            packageItem={{
-                                id: packageData.id,
-                                name: packageData.title,
-                                price: finalPrice // O packageData.price según prefieras
-                            }}
-                        />
-
                     </Box>
                 </div>
             </div>
@@ -248,7 +239,13 @@ export default function PackageDetail() {
 
             <Box id="section-dates" className="tab-section">
                 <h2>Fechas</h2>
-                <DatesPricesSection dates={packageData.availability} />
+                <DatesPricesSection
+                    dates={packageData.availability}
+                    packageId={packageData.id}
+                    packagePrice={packageData.price}
+                    packageDiscount={packageData.discount || 0} // 👈 Pasamos el descuento
+                    packageTitle={packageData.title}
+                />
             </Box>
 
         </Container>

@@ -5,6 +5,11 @@ export default function MyReservationsPage() {
     const [reservations, setReservations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // 🟢 Estados para controlar el Modal (Dialog) de detalles
+    const [selectedReservation, setSelectedReservation] = useState<any>(null);
+    const [openDialog, setOpenDialog] = useState(false);
+
     const navigate = useNavigate();
 
     const userId = 5; // ID del usuario actual de prueba
@@ -31,6 +36,16 @@ export default function MyReservationsPage() {
         fetchUserReservations();
     }, [userId]);
 
+    const handleOpenDetails = (reservation: any) => {
+        setSelectedReservation(reservation);
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setSelectedReservation(null);
+    };
+
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem 1rem' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
@@ -38,7 +53,7 @@ export default function MyReservationsPage() {
                     Mis Reservaciones y Compras
                 </h1>
                 <p style={{ color: '#4b5563', fontSize: '1rem' }}>
-                    Aquí puedes ver el estado de todos los paquetes turísticos que has adquirido.
+                    Aquí puedes ver el estado de todos los paquetes turísticos que has adquirido. Haz clic en cualquiera para ver sus detalles.
                 </p>
             </div>
 
@@ -72,53 +87,153 @@ export default function MyReservationsPage() {
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    {reservations.map((item, index) => (
-                        <div
-                            key={item.id || index}
-                            style={{
-                                backgroundColor: '#ffffff',
-                                borderRadius: '12px',
-                                padding: '1.5rem',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                                border: '1px solid #e5e7eb',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                gap: '1rem'
-                            }}
-                        >
-                            <div>
-                                {/* 🟢 Mostramos el nombre real del paquete en vez de la referencia cruda */}
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '0.35rem' }}>
-                                    {item.packageName}
-                                </h3>
-                                <p style={{ fontSize: '0.9rem', color: '#4b5563', marginBottom: '0.25rem' }}>
-                                    Monto pagado: <strong>S/ {Number(item.packagePrice || 0).toFixed(2)}</strong>
-                                </p>
-                                <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                                    ID de Transacción: {item.paymentId} • Fecha: {new Date(item.createdAt).toLocaleDateString()}
-                                </p>
-                            </div>
+                    {reservations.map((item, index) => {
+                        // 🟢 Cálculo de precios y descuentos
+                        const originalPrice = Number(item.packagePrice || 0);
+                        const discount = Number(item.packageDiscount || 0);
+                        const finalPrice = discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice;
 
-                            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                                <span style={{
-                                    backgroundColor: item.status === 'approved' ? '#dcfce7' : '#fef3c7',
-                                    color: item.status === 'approved' ? '#16a34a' : '#d97706',
-                                    padding: '0.35rem 0.85rem',
-                                    borderRadius: '20px',
-                                    fontSize: '0.85rem',
-                                    fontWeight: '600',
-                                    textTransform: 'capitalize'
-                                }}>
-                                    {item.status === 'approved' ? 'Aprobado' : item.status}
-                                </span>
-                                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                                    Ref: {item.preferenceId ? item.preferenceId.substring(0, 12) + '...' : 'N/A'}
-                                </span>
+                        return (
+                            <div
+                                key={item.id || index}
+                                onClick={() => handleOpenDetails(item)} // 👈 Abre el modal al hacer clic
+                                style={{
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                                    border: '1px solid #e5e7eb',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: '1rem',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.05)';
+                                }}
+                            >
+                                <div>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '0.35rem' }}>
+                                        {item.packageName}
+                                    </h3>
+
+                                    {/* 🟢 Mostramos precio con descuento si aplica */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                                        {discount > 0 ? (
+                                            <>
+                                                <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '0.9rem' }}>
+                                                    S/ {originalPrice.toFixed(2)}
+                                                </span>
+                                                <span style={{ fontWeight: 'bold', color: '#2563eb', fontSize: '1rem' }}>
+                                                    S/ {finalPrice.toFixed(2)} (-{discount}%)
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '1rem' }}>
+                                                S/ {originalPrice.toFixed(2)}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                                        ID de Transacción: {item.paymentId} • Fecha: {new Date(item.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+
+                                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                    <span style={{
+                                        backgroundColor: item.status === 'approved' ? '#dcfce7' : '#fef3c7',
+                                        color: item.status === 'approved' ? '#16a34a' : '#d97706',
+                                        padding: '0.35rem 0.85rem',
+                                        borderRadius: '20px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        textTransform: 'capitalize'
+                                    }}>
+                                        {item.status === 'approved' ? 'Aprobado' : item.status}
+                                    </span>
+                                    <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                                        Ver detalles 🔍
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* 🟢 MODAL / DIALOG DE DETALLES */}
+            {openDialog && selectedReservation && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000,
+                    padding: '1rem'
+                }}>
+                    <div style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '16px',
+                        maxWidth: '500px',
+                        width: '100%',
+                        padding: '2rem',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                        position: 'relative',
+                        animation: 'fadeIn 0.2s ease-in-out'
+                    }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', marginBottom: '1rem' }}>
+                            Detalles de la Reservación
+                        </h2>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', color: '#374151' }}>
+                            <p style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2563eb' }}>
+                                {selectedReservation.packageName}
+                            </p>
+                            <hr style={{ border: '0', borderTop: '1px solid #e5e7eb', margin: '0.25rem 0' }} />
+                            <p><strong>Estado:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedReservation.status}</span></p>
+                            <p><strong>ID de Pago (MP):</strong> {selectedReservation.paymentId}</p>
+                            <p><strong>Fecha de Compra:</strong> {new Date(selectedReservation.createdAt).toLocaleString()}</p>
+                            
+                            <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem' }}>
+                                <p style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Resumen Financiero:</p>
+                                <p>Precio del Paquete: S/ {Number(selectedReservation.packagePrice || 0).toFixed(2)}</p>
+                                {selectedReservation.packageDiscount > 0 && (
+                                    <p style={{ color: '#16a34a' }}>Descuento aplicado: {selectedReservation.packageDiscount}%</p>
+                                )}
                             </div>
                         </div>
-                    ))}
+
+                        <div style={{ textAlign: 'right' }}>
+                            <button
+                                onClick={handleCloseDialog}
+                                style={{
+                                    backgroundColor: '#111827',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    padding: '0.6rem 1.25rem',
+                                    borderRadius: '8px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

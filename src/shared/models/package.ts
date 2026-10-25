@@ -29,6 +29,7 @@ export interface ItineraryItem {
 }
 
 export interface AvailabilityItem {
+    id: number;
     startDate: string; // ISO
     endDate: string;   // ISO
     spaceLeft: number;
