@@ -7,7 +7,7 @@ export default function MyReservationsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // 🟢 Estados para controlar el Modal (Dialog) de detalles
+    // Estados para controlar el Modal (Dialog) de detalles
     const [selectedReservation, setSelectedReservation] = useState<any>(null);
     const [openDialog, setOpenDialog] = useState(false);
 
@@ -18,7 +18,6 @@ export default function MyReservationsPage() {
     useEffect(() => {
         async function fetchUserReservations() {
             try {
-                // 🟢 Usamos el método centralizado del service
                 const data = await paymentService.getUserReservations(userId);
                 setReservations(data);
             } catch (err: any) {
@@ -32,7 +31,8 @@ export default function MyReservationsPage() {
         fetchUserReservations();
     }, [userId]);
 
-    const handleOpenDetails = (reservation: any) => {
+    const handleOpenDetails = (reservation: any, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation(); // Evitamos conflictos si hay otros eventos
         setSelectedReservation(reservation);
         setOpenDialog(true);
     };
@@ -44,12 +44,12 @@ export default function MyReservationsPage() {
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem 1rem' }}>
-            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827', marginBottom: '0.5rem' }}>
+            <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+                <h1 style={{ fontSize: '2.25rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem' }}>
                     Mis Reservaciones y Compras
                 </h1>
                 <p style={{ color: '#4b5563', fontSize: '1rem' }}>
-                    Aquí puedes ver el estado de todos los paquetes turísticos que has adquirido. Haz clic en cualquiera para ver sus detalles.
+                    Visualiza el estado de tus experiencias turísticas adquiridas y consulta sus detalles.
                 </p>
             </div>
 
@@ -82,7 +82,7 @@ export default function MyReservationsPage() {
                     </button>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     {reservations.map((item, index) => {
                         const originalPrice = Number(item.packagePrice || 0);
                         const discount = Number(item.packageDiscount || 0);
@@ -94,69 +94,93 @@ export default function MyReservationsPage() {
                                 onClick={() => handleOpenDetails(item)}
                                 style={{
                                     backgroundColor: '#ffffff',
-                                    borderRadius: '12px',
+                                    borderRadius: '14px',
                                     padding: '1.5rem',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
                                     border: '1px solid #e5e7eb',
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     flexWrap: 'wrap',
-                                    gap: '1rem',
+                                    gap: '1.5rem',
                                     cursor: 'pointer',
-                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                                    transition: 'all 0.2s ease'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                                    e.currentTarget.style.boxShadow = '0 10px 20px -3px rgba(0, 0, 0, 0.08)';
+                                    e.currentTarget.style.borderColor = '#cbd5e1';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.05)';
+                                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.04)';
+                                    e.currentTarget.style.borderColor = '#e5e7eb';
                                 }}
                             >
-                                <div>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '0.35rem' }}>
+                                {/* Info principal */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '240px' }}>
+                                    <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#1f2937', margin: 0 }}>
                                         {item.packageName}
                                     </h3>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.15rem 0' }}>
                                         {discount > 0 ? (
                                             <>
-                                                <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '0.9rem' }}>
+                                                <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '0.85rem' }}>
                                                     S/ {originalPrice.toFixed(2)}
                                                 </span>
-                                                <span style={{ fontWeight: 'bold', color: '#2563eb', fontSize: '1rem' }}>
+                                                <span style={{ fontWeight: '700', color: '#2563eb', fontSize: '1rem' }}>
                                                     S/ {finalPrice.toFixed(2)} (-{discount}%)
                                                 </span>
                                             </>
                                         ) : (
-                                            <span style={{ fontWeight: 'bold', color: '#1f2937', fontSize: '1rem' }}>
+                                            <span style={{ fontWeight: '700', color: '#111827', fontSize: '1rem' }}>
                                                 S/ {originalPrice.toFixed(2)}
                                             </span>
                                         )}
                                     </div>
 
-                                    <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                                        ID de Transacción: {item.paymentId} • Fecha: {new Date(item.createdAt).toLocaleDateString()}
-                                    </p>
+                                    <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                                        ID: {item.paymentId} &bull; {new Date(item.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </span>
                                 </div>
 
-                                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                {/* Acciones y Estado (Mejora visual UX) */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                                     <span style={{
                                         backgroundColor: item.status === 'approved' ? '#dcfce7' : '#fef3c7',
-                                        color: item.status === 'approved' ? '#16a34a' : '#d97706',
+                                        color: item.status === 'approved' ? '#15803d' : '#b45309',
                                         padding: '0.35rem 0.85rem',
                                         borderRadius: '20px',
-                                        fontSize: '0.85rem',
+                                        fontSize: '0.8rem',
                                         fontWeight: '600',
                                         textTransform: 'capitalize'
                                     }}>
                                         {item.status === 'approved' ? 'Aprobado' : item.status}
                                     </span>
-                                    <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                                        Ver detalles 🔍
-                                    </span>
+
+                                    {/* 🟢 Botón de acción claro en lugar de texto plano */}
+                                    <button
+                                        onClick={(e) => handleOpenDetails(item, e)}
+                                        style={{
+                                            backgroundColor: '#f8fafc',
+                                            color: '#334155',
+                                            border: '1px solid #cbd5e1',
+                                            padding: '0.45rem 1rem',
+                                            borderRadius: '8px',
+                                            fontSize: '0.85rem',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.4rem',
+                                            transition: 'background-color 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                    >
+                                        Ver detalles
+                                    </button>
                                 </div>
                             </div>
                         );
@@ -173,6 +197,7 @@ export default function MyReservationsPage() {
                     width: '100vw',
                     height: '100vh',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(4px)',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -182,31 +207,46 @@ export default function MyReservationsPage() {
                     <div style={{
                         backgroundColor: '#ffffff',
                         borderRadius: '16px',
-                        maxWidth: '500px',
+                        maxWidth: '480px',
                         width: '100%',
                         padding: '2rem',
-                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                         position: 'relative',
                     }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', marginBottom: '1rem' }}>
+                        <h2 style={{ fontSize: '1.35rem', fontWeight: 'bold', color: '#111827', marginBottom: '1.25rem' }}>
                             Detalles de la Reservación
                         </h2>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', color: '#374151' }}>
-                            <p style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2563eb' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.5rem', color: '#374151', fontSize: '0.95rem' }}>
+                            <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#2563eb', margin: 0 }}>
                                 {selectedReservation.packageName}
                             </p>
-                            <hr style={{ border: '0', borderTop: '1px solid #e5e7eb', margin: '0.25rem 0' }} />
-                            <p><strong>Estado:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedReservation.status}</span></p>
-                            <p><strong>ID de Pago (MP):</strong> {selectedReservation.paymentId}</p>
-                            <p><strong>Fecha de Compra:</strong> {new Date(selectedReservation.createdAt).toLocaleString()}</p>
-                            <p style={{ wordBreak: 'break-all' }}><strong>Referencia Externa:</strong> {selectedReservation.externalReference || 'N/A'}</p>
+                            <hr style={{ border: '0', borderTop: '1px solid #e5e7eb', margin: '0.2rem 0' }} />
 
-                            <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem' }}>
-                                <p style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Resumen Financiero:</p>
-                                <p>Precio del Paquete: S/ {Number(selectedReservation.packagePrice || 0).toFixed(2)}</p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#6b7280' }}>Estado:</span>
+                                <span style={{ fontWeight: '600', textTransform: 'capitalize' }}>{selectedReservation.status}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#6b7280' }}>ID de Pago (MP):</span>
+                                <span style={{ fontWeight: '600' }}>{selectedReservation.paymentId}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#6b7280' }}>Fecha de Compra:</span>
+                                <span style={{ fontWeight: '600' }}>{new Date(selectedReservation.createdAt).toLocaleString()}</span>
+                            </div>
+
+                            <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '10px', marginTop: '0.5rem', border: '1px solid #e2e8f0' }}>
+                                <p style={{ fontWeight: '700', marginBottom: '0.5rem', color: '#1e293b' }}>Resumen Financiero</p>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                                    <span>Precio del Paquete:</span>
+                                    <span>S/ {Number(selectedReservation.packagePrice || 0).toFixed(2)}</span>
+                                </div>
                                 {selectedReservation.packageDiscount > 0 && (
-                                    <p style={{ color: '#16a34a' }}>Descuento aplicado: {selectedReservation.packageDiscount}%</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#16a34a', fontWeight: '600' }}>
+                                        <span>Descuento aplicado:</span>
+                                        <span>-{selectedReservation.packageDiscount}%</span>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -218,10 +258,11 @@ export default function MyReservationsPage() {
                                     backgroundColor: '#111827',
                                     color: '#ffffff',
                                     border: 'none',
-                                    padding: '0.6rem 1.25rem',
+                                    padding: '0.6rem 1.5rem',
                                     borderRadius: '8px',
                                     fontWeight: '600',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
+                                    width: '100%'
                                 }}
                             >
                                 Cerrar
