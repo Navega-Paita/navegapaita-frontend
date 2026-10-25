@@ -13,7 +13,7 @@ export default function MyReservationsPage() {
 
     const navigate = useNavigate();
 
-    const userId = 5; // ID del usuario actual de prueba
+    const userId = localStorage.getItem('userId') || '1';
 
     useEffect(() => {
         async function fetchUserReservations() {
