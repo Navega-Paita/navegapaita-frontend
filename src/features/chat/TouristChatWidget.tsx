@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // 🟢 Importamos el router para la navegación
 
 interface ChatMessage {
     sender: 'user' | 'ai';
@@ -10,15 +11,15 @@ const SESSION_STORAGE_KEY = 'n_paita_tourist_chat_history';
 
 export const TouristChatWidget: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate(); // 🟢 Instanciamos el hook de navegación
 
-    // Cargar historial desde sessionStorage al iniciar
     const [messages, setMessages] = useState<ChatMessage[]>(() => {
         const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
         if (saved) {
             try { return JSON.parse(saved); } catch (e) { /* ignore */ }
         }
         return [
-            { sender: 'ai', text: '¡Hola! 🌊 Bienvenido a Navega Paita. ¿Te gustaría conocer nuestros paquetes turísticos disponibles hoy?' }
+            { sender: 'ai', text: '¡Hola! 🌊 Bienvenido a Navega Paita. ¿En qué te puedo ayudar hoy?' }
         ];
     });
 
@@ -26,7 +27,6 @@ export const TouristChatWidget: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Guardar en sessionStorage cada vez que el chat cambie
     useEffect(() => {
         sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(messages));
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,7 +44,6 @@ export const TouristChatWidget: React.FC = () => {
         setLoading(true);
 
         try {
-            // Mapeamos el historial al formato que espera el backend
             const historyForBackend = updatedMessages.slice(0, -1).map(m => ({
                 role: m.sender === 'user' ? 'user' : 'assistant',
                 parts: [{ text: m.text }]
@@ -94,7 +93,7 @@ export const TouristChatWidget: React.FC = () => {
                         <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '16px' }}>✕</button>
                     </div>
 
-                    {/* Área de Mensajes */}
+                    {/* Mensajes */}
                     <div style={{ flex: 1, padding: '15px', overflowY: 'auto', backgroundColor: '#f8f9fa', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {messages.map((msg, index) => (
                             <div key={index} style={{
@@ -105,19 +104,34 @@ export const TouristChatWidget: React.FC = () => {
                             }}>
                                 <div>{msg.text}</div>
 
-                                {/* Renderizado de Tarjetas de Paquetes si la IA los incluye */}
+                                {/* Tarjetas de Paquetes Clickeables */}
                                 {msg.packages && msg.packages.length > 0 && (
                                     <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         {msg.packages.map((pkg: any, pIdx: number) => (
-                                            <div key={pIdx} style={{
-                                                backgroundColor: 'white', color: '#333', padding: '8px 10px', borderRadius: '8px',
-                                                border: '1px solid #ddd', fontSize: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                                            }}>
-                                                <strong style={{ color: '#0084FF' }}>{pkg.name}</strong>
+                                            <div
+                                                key={pIdx}
+                                                onClick={() => {
+                                                    if (pkg.slug) {
+                                                        navigate(`/buscar/${pkg.slug}`); // 🟢 Redirección dinámica al hacer clic
+                                                        setIsOpen(false); // Opcional: cierra el chat al navegar
+                                                    }
+                                                }}
+                                                style={{
+                                                    backgroundColor: 'white', color: '#333', padding: '10px', borderRadius: '8px',
+                                                    border: '1px solid #ddd', fontSize: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                                                    cursor: 'pointer', transition: 'all 0.2s ease',
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.borderColor = '#0084FF'}
+                                                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#ddd'}
+                                            >
+                                                <strong style={{ color: '#0084FF', fontSize: '13px' }}>{pkg.name}</strong>
                                                 <p style={{ margin: '4px 0', color: '#666' }}>{pkg.description}</p>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '6px' }}>
-                                                    <span>S/ {pkg.price}</span>
-                                                    <span style={{ color: '#0084FF' }}>{pkg.duration}</span>
+                                                    <span style={{ color: '#2ecc71' }}>S/ {pkg.price}</span>
+                                                    <span style={{ color: '#888' }}>{pkg.duration}</span>
+                                                </div>
+                                                <div style={{ textAlign: 'right', marginTop: '4px', fontSize: '11px', color: '#0084FF', fontWeight: 'bold' }}>
+                                                    Ver detalles →
                                                 </div>
                                             </div>
                                         ))}
@@ -129,7 +143,7 @@ export const TouristChatWidget: React.FC = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input Inferior */}
+                    {/* Input */}
                     <form onSubmit={handleSend} style={{ padding: '10px', borderTop: '1px solid #ddd', display: 'flex', gap: '8px', backgroundColor: 'white' }}>
                         <input
                             type="text"
