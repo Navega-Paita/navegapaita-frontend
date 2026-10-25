@@ -1,8 +1,9 @@
+// src/services/operation.service.ts (o la ruta correspondiente)
 import type { Operation } from '../../shared/models/operation.model';
 import type { User } from '../../shared/models/user.model';
 import type { Vessel } from '../../shared/models/vessel.model';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const operationService = {
     // Retorna la lista de operaciones para la tabla principal

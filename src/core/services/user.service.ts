@@ -1,8 +1,9 @@
 // src/core/services/user.service.ts
 
-import type {UpdateUserDto} from "../../shared/dtos/update-user.dto.ts";
+import type { UpdateUserDto } from "../../shared/dtos/update-user.dto.ts";
 import type { CreateUserDto } from "../../shared/dtos/create-user.dto.ts";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export interface UserStaffDto {
     id: number;
@@ -13,7 +14,7 @@ export interface UserStaffDto {
 }
 
 class UserService {
-    private baseUrl = 'http://localhost:3000/users'; // Ajusta a tu API
+    private baseUrl = `${API_URL}/users`;
 
     async getStaffMembers(): Promise<UserStaffDto[]> {
         const currentUserId = localStorage.getItem('userId');

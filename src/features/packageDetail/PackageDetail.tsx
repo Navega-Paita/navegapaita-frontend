@@ -23,7 +23,6 @@ import DatesPricesSection from "./components/DatesPricesSection";
 import InclusionsSection from "./components/InclusionsSection.tsx";
 import "./PackageDetail.css";
 import type {PackageDetailDto} from "../../shared/dtos/package-detail.dto.ts";
-import { MercadoPagoButton} from "../../shared/components/MercadoPago/MercadoPagoButton.tsx";
 
 export default function PackageDetail() {
     const { slug } = useParams<{ slug: string }>();
@@ -193,6 +192,7 @@ export default function PackageDetail() {
                             fullWidth
                             variant="contained"
                             className="price-cta"
+                            onClick={() => handleTabClick("section-dates")} // 👈 Añadimos esta línea
                         >
                             Ver fechas
                         </Button>

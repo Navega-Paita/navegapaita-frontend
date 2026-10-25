@@ -1,5 +1,7 @@
+// src/components/TouristChatWidget.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 🟢 Importamos el router para la navegación
+import { useNavigate } from 'react-router-dom';
+import { sendChatMessage} from "../../core/services/ai.service.ts";
 
 interface ChatMessage {
     sender: 'user' | 'ai';
@@ -11,7 +13,7 @@ const SESSION_STORAGE_KEY = 'n_paita_tourist_chat_history';
 
 export const TouristChatWidget: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate(); // 🟢 Instanciamos el hook de navegación
+    const navigate = useNavigate();
 
     const [messages, setMessages] = useState<ChatMessage[]>(() => {
         const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
@@ -49,13 +51,8 @@ export const TouristChatWidget: React.FC = () => {
                 parts: [{ text: m.text }]
             }));
 
-            const response = await fetch('http://localhost:3000/ai-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg, history: historyForBackend }),
-            });
-
-            const data = await response.json();
+            // 🟢 Llamada limpia al servicio centralizado
+            const data = await sendChatMessage(userMsg, historyForBackend);
 
             setMessages(prev => [
                 ...prev,
@@ -112,8 +109,8 @@ export const TouristChatWidget: React.FC = () => {
                                                 key={pIdx}
                                                 onClick={() => {
                                                     if (pkg.slug) {
-                                                        navigate(`/buscar/${pkg.slug}`); // 🟢 Redirección dinámica al hacer clic
-                                                        setIsOpen(false); // Opcional: cierra el chat al navegar
+                                                        navigate(`/buscar/${pkg.slug}`);
+                                                        setIsOpen(false);
                                                     }
                                                 }}
                                                 style={{

@@ -1,14 +1,16 @@
 // src/core/services/socket.service.ts
 import { io, Socket } from 'socket.io-client';
-import type {Operation} from "../../shared/models/operation.model.ts";
-import type {ResourceUpdatePayload} from "../../shared/models/resource.model.ts";
+import type { Operation } from "../../shared/models/operation.model.ts";
+import type { ResourceUpdatePayload } from "../../shared/models/resource.model.ts";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 class SocketService {
     public socket: Socket;
 
     constructor() {
-        // Ajusta la URL según tu backend
-        this.socket = io('http://localhost:3000', {
+        // 🟢 Usamos la variable de entorno centralizada
+        this.socket = io(API_URL, {
             autoConnect: true,
         });
     }

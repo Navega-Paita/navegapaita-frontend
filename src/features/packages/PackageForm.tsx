@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import './PackageForm.css';
 import { ImageCropper } from "../../shared/components/ImageCropper/ImageCropper.tsx";
 import { cloudinaryService } from "../../core/services/cloudinary.service.ts";
+import {packageService} from "../../core/services/package.service.ts";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 interface ItineraryItem {
@@ -357,15 +358,14 @@ export default function PackageCreatePage() {
                 availability: availability,
             };
 
-            console.log("🚀 PAYLOAD LISTO PARA ENVIAR AL BACKEND:");
-            console.log(JSON.stringify(payload, null, 2));
+            await packageService.createPackage(payload);
 
-            // await packageService.create(payload);
-            alert(`¡Paquete "${formData.title}" armado con éxito! Revisa la consola.`);
+            // 🟢 Redirección a /paquetes tras el éxito
+            navigate('/paquetes');
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error al armar el paquete:", error);
-            alert("Hubo un error al procesar las imágenes o los datos.");
+            alert(error.message || "Hubo un error al procesar las imágenes o los datos.");
         } finally {
             setLoading(false);
         }

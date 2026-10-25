@@ -1,3 +1,4 @@
+// src/services/package.service.ts (o la ruta donde lo tengas ubicado)
 import type { PackageCardDto } from "../../shared/dtos/package-card.dto.ts";
 import type { PackageDetailDto } from "../../shared/dtos/package-detail.dto.ts";
 import type { Package } from "../../shared/models/package.ts";
@@ -15,7 +16,7 @@ interface SearchFilters {
     date_range_to?: string;
 }
 
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const packageService = {
 

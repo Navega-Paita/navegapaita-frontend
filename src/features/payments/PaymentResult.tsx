@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { paymentService} from "../../core/services/payment.service.ts";
 
 export default function PaymentResult() {
     const [searchParams] = useSearchParams();
@@ -17,15 +18,12 @@ export default function PaymentResult() {
         async function confirmPaymentOnBackend() {
             if (paymentId && status === 'approved') {
                 try {
-                    await fetch('http://localhost:3000/payments/success', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            payment_id: paymentId,
-                            status: status,
-                            preference_id: preferenceId,
-                            external_reference: externalReference,
-                        }),
+                    // 🟢 Usamos el servicio centralizado
+                    await paymentService.confirmPayment({
+                        payment_id: paymentId,
+                        status: status,
+                        preference_id: preferenceId,
+                        external_reference: externalReference,
                     });
                 } catch (error) {
                     console.error('Error al registrar el pago en el backend:', error);

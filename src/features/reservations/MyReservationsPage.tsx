@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { paymentService } from "../../core/services/payment.service.ts";
 
 export default function MyReservationsPage() {
     const [reservations, setReservations] = useState<any[]>([]);
@@ -17,13 +18,8 @@ export default function MyReservationsPage() {
     useEffect(() => {
         async function fetchUserReservations() {
             try {
-                const response = await fetch(`http://localhost:3000/payments/user/${userId}`);
-
-                if (!response.ok) {
-                    throw new Error('No se pudo obtener el historial de reservaciones.');
-                }
-
-                const data = await response.json();
+                // 🟢 Usamos el método centralizado del service
+                const data = await paymentService.getUserReservations(userId);
                 setReservations(data);
             } catch (err: any) {
                 console.error(err);
@@ -88,7 +84,6 @@ export default function MyReservationsPage() {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     {reservations.map((item, index) => {
-                        // 🟢 Cálculo de precios y descuentos
                         const originalPrice = Number(item.packagePrice || 0);
                         const discount = Number(item.packageDiscount || 0);
                         const finalPrice = discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice;
@@ -96,7 +91,7 @@ export default function MyReservationsPage() {
                         return (
                             <div
                                 key={item.id || index}
-                                onClick={() => handleOpenDetails(item)} // 👈 Abre el modal al hacer clic
+                                onClick={() => handleOpenDetails(item)}
                                 style={{
                                     backgroundColor: '#ffffff',
                                     borderRadius: '12px',
@@ -125,7 +120,6 @@ export default function MyReservationsPage() {
                                         {item.packageName}
                                     </h3>
 
-                                    {/* 🟢 Mostramos precio con descuento si aplica */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
                                         {discount > 0 ? (
                                             <>
@@ -170,7 +164,7 @@ export default function MyReservationsPage() {
                 </div>
             )}
 
-            {/* 🟢 MODAL / DIALOG DE DETALLES */}
+            {/* MODAL / DIALOG DE DETALLES */}
             {openDialog && selectedReservation && (
                 <div style={{
                     position: 'fixed',
@@ -193,7 +187,6 @@ export default function MyReservationsPage() {
                         padding: '2rem',
                         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
                         position: 'relative',
-                        animation: 'fadeIn 0.2s ease-in-out'
                     }}>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', marginBottom: '1rem' }}>
                             Detalles de la Reservación
@@ -207,7 +200,8 @@ export default function MyReservationsPage() {
                             <p><strong>Estado:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedReservation.status}</span></p>
                             <p><strong>ID de Pago (MP):</strong> {selectedReservation.paymentId}</p>
                             <p><strong>Fecha de Compra:</strong> {new Date(selectedReservation.createdAt).toLocaleString()}</p>
-                            
+                            <p style={{ wordBreak: 'break-all' }}><strong>Referencia Externa:</strong> {selectedReservation.externalReference || 'N/A'}</p>
+
                             <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem' }}>
                                 <p style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Resumen Financiero:</p>
                                 <p>Precio del Paquete: S/ {Number(selectedReservation.packagePrice || 0).toFixed(2)}</p>

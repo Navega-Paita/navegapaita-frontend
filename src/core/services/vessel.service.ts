@@ -1,8 +1,9 @@
+// src/services/vessel.service.ts (o la ruta correspondiente)
 import type { CreateVesselDto } from "../../shared/dtos/vessel.dto.ts";
 import { cloudinaryService } from "./cloudinary.service.ts";
 import type { CloudinaryImage } from "../../shared/models/cloudinary.model.ts";
 
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const vesselService = {
 

@@ -7,6 +7,7 @@ import {
 import PeopleIcon from '@mui/icons-material/People';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import type { AvailabilityItem } from "../../../shared/models/package.ts";
+import { paymentService } from "../../../core/services/payment.service.ts";
 
 interface DatesPricesSectionProps {
     dates: AvailabilityItem[];
@@ -31,8 +32,7 @@ export default function DatesPricesSection({
     const [quantity, setQuantity] = useState(1);
     const [loadingPayment, setLoadingPayment] = useState(false);
 
-    // 🟢 Cálculo del precio final aplicando el descuento si existe (ej. discount = porcentaje o monto fijo, asumiremos porcentaje o valor directo según tu lógica)
-    // Si tu descuento es un porcentaje (ej: 10 para 10%):
+    // 🟢 Cálculo del precio final aplicando el porcentaje de descuento si existe
     const finalPricePerPerson = packageDiscount > 0
         ? packagePrice * (1 - packageDiscount / 100)
         : packagePrice;
@@ -70,23 +70,18 @@ export default function DatesPricesSection({
         setLoadingPayment(true);
 
         try {
-            const response = await fetch('http://localhost:3000/payments/create-preference', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+            // 🟢 Uso del servicio de pago centralizado
+            const data = await paymentService.createPreference(payload);
 
-            const data = await response.json();
-
-            if (response.ok && data.initPoint) {
+            if (data.initPoint) {
                 window.location.href = data.initPoint;
             } else {
                 console.error("Error del servidor MP:", data);
                 alert(`No se pudo generar la preferencia: ${data.message || 'Error desconocido'}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error al conectar con la pasarela de pagos:', error);
-            alert('Ocurrió un error de red al procesar la solicitud.');
+            alert(error.message || 'Ocurrió un error de red al procesar la solicitud.');
         } finally {
             setLoadingPayment(false);
         }
