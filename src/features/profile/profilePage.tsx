@@ -10,6 +10,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import BadgeIcon from '@mui/icons-material/Badge';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'; // 👈 Icono para Mis Reservaciones
 
 export default function ProfilePage() {
     const { user, logout } = useAuth();
@@ -119,18 +120,37 @@ export default function ProfilePage() {
 
                     {/* Acciones de Cuenta */}
                     <Stack spacing={2}>
+                        {/* 🟢 Botón de Acceso Directo a Mis Reservaciones */}
                         <Button
                             fullWidth
                             variant="contained"
+                            startIcon={<ReceiptLongIcon />}
+                            onClick={() => navigate('/mis-reservaciones')}
+                            sx={{
+                                py: 1.5,
+                                borderRadius: '12px',
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                bgcolor: '#2563eb', // Azul vibrante para destacar la sección de compras
+                                boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
+                                '&:hover': { bgcolor: '#1d4ed8', boxShadow: 'none' }
+                            }}
+                        >
+                            Mis Reservaciones y Compras
+                        </Button>
+
+                        <Button
+                            fullWidth
+                            variant="outlined"
                             startIcon={<SettingsIcon />}
                             sx={{
                                 py: 1.5,
                                 borderRadius: '12px',
                                 textTransform: 'none',
                                 fontWeight: 700,
-                                bgcolor: '#141d38',
-                                boxShadow: 'none',
-                                '&:hover': { bgcolor: '#000', boxShadow: 'none' }
+                                color: '#141d38',
+                                borderColor: '#d1d5db',
+                                '&:hover': { borderColor: '#141d38', bgcolor: '#f9fafb' }
                             }}
                         >
                             Configuración de Cuenta

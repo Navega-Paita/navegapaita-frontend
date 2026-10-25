@@ -23,6 +23,7 @@ import DatesPricesSection from "./components/DatesPricesSection";
 import InclusionsSection from "./components/InclusionsSection.tsx";
 import "./PackageDetail.css";
 import type {PackageDetailDto} from "../../shared/dtos/package-detail.dto.ts";
+import { MercadoPagoButton} from "../../shared/components/MercadoPago/MercadoPagoButton.tsx";
 
 export default function PackageDetail() {
     const { slug } = useParams<{ slug: string }>();
@@ -195,6 +196,16 @@ export default function PackageDetail() {
                         >
                             Ver fechas
                         </Button>
+
+                        {/* AQUÍ INTEGRAMOS EL BOTÓN DE MERCADO PAGO */}
+                        <MercadoPagoButton
+                            packageItem={{
+                                id: packageData.id,
+                                name: packageData.title,
+                                price: finalPrice // O packageData.price según prefieras
+                            }}
+                        />
+
                     </Box>
                 </div>
             </div>

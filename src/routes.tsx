@@ -22,6 +22,8 @@ import ProfilePage from "./features/profile/profilePage.tsx";
 import UserManagementPage from "./features/UserManagement/UserManagementPage.tsx";
 import VesselsPage from "./features/vessels/VesselsPage.tsx";
 import PackagesPage from "./features/packages/PackagesPage.tsx";
+import PaymentResult from "./features/payments/PaymentResult.tsx";
+import MyReservationsPage from "./features/reservations/MyReservationsPage.tsx";
 
 export default function AppRoutes() {
     return (
@@ -37,6 +39,8 @@ export default function AppRoutes() {
                 <Route path="/buscar/:slug" element={<PackageDetail />} />
                 <Route path="/wishlist" element={<WishlistPage />} />
                 <Route path="/perfil" element={<ProfilePage />} />
+                <Route path="/pago/resultado" element={<PaymentResult />} />
+                <Route path="/mis-reservaciones" element={<MyReservationsPage />} />
             </Route>
 
             {/* ==========================================================

@@ -8,10 +8,10 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import type { Package} from "../../../shared/models/package.ts";
+import type { PackageDetailDto } from "../../../shared/dtos/package-detail.dto.ts";
 
 interface Props {
-    packageData: Package;
+    packageData: PackageDetailDto;
 }
 
 export default function InclusionsSection({ packageData }: Props) {
