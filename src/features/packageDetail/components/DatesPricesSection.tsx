@@ -55,7 +55,17 @@ export default function DatesPricesSection({
     const handleProceedToCheckout = async () => {
         if (!selectedDate) return;
 
-        const userId = localStorage.getItem('userId') || '1';
+        // 🟢 VALIDACIÓN DE AUTENTICACIÓN
+        const token = localStorage.getItem('token'); // O 'userId', dependiendo de cómo guardes la sesión
+        const userId = localStorage.getItem('userId');
+
+        if (!token || !userId) {
+            alert("Debes iniciar sesión para realizar una reserva y procesar el pago.");
+            // Opcional: Redirigir al login
+            // window.location.href = '/login';
+            return;
+        }
+
         const timestamp = Date.now();
         const externalReference = `USER_${userId}_PKG_${packageId}_AVAIL_${selectedDate.id}_${timestamp}`;
 
