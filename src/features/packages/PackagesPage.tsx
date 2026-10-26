@@ -159,7 +159,7 @@ export default function PackagesPage() {
                                             <Chip label={pkg.type} size="small" variant="outlined" />
                                         </TableCell>
                                         <TableCell sx={{ fontWeight: 'bold' }}>
-                                            ${Number(pkg.price).toFixed(2)}
+                                            S/{Number(pkg.price).toFixed(2)}
                                         </TableCell>
 
                                         {/* Columna de Visibilidad (isVisible) */}

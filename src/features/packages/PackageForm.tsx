@@ -705,7 +705,7 @@ export default function PackageCreatePage() {
                                     Precio con descuento aplicado:
                                 </Typography>
                                 <Typography variant="h5" color="primary" fontWeight={800}>
-                                    USD {finalPrice.toFixed(2)}
+                                    PEN {finalPrice.toFixed(2)}
                                 </Typography>
                             </Box>
 
