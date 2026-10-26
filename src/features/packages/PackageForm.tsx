@@ -558,7 +558,7 @@ export default function PackageCreatePage() {
                                                 <TextField
                                                     size="small"
                                                     fullWidth
-                                                    placeholder="Ej: Kayak - USD40"
+                                                    placeholder="Ej: Kayak - S/40"
                                                     value={tempOptional[index] || ''}
                                                     onChange={e => setTempOptional(prev => ({ ...prev, [index]: e.target.value }))}
                                                     onKeyDown={e => {
@@ -684,7 +684,7 @@ export default function PackageCreatePage() {
                             <Typography variant="h6" gutterBottom>Precio y Cupos</Typography>
                             <TextField
                                 fullWidth type="number"
-                                label="Precio Base (USD)"
+                                label="Precio Base (PEN)"
                                 sx={{ mb: 2 }}
                                 inputProps={{ min: 0 }}
                                 value={formData.price}

@@ -159,10 +159,10 @@ export default function PackageDetail() {
                         <Typography className="price-label">Desde</Typography>
 
                         <Box className="price-row">
-                            <Typography className="price-final">USD {finalPrice}</Typography>
+                            <Typography className="price-final">PEN {finalPrice}</Typography>
                             {hasDiscount && (
                                 <Typography className="price-original">
-                                    USD {packageData.price}
+                                    PEN {packageData.price}
                                 </Typography>
                             )}
                         </Box>
