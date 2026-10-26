@@ -125,12 +125,12 @@ export default function ExperienceCard({ experience }: ExperienceCardProps) {
                                 fontWeight: 500
                             }}
                         >
-                            PEN ${experience.price.toLocaleString()}
+                            PEN S/{experience.price.toLocaleString()}
                         </Typography>
                     )}
 
                     <Typography sx={{ fontSize: '18px', fontWeight: 700, color: hasDiscount ? '#005b9e' : 'text.primary' }}>
-                        PEN ${experience.price.toLocaleString()}
+                        PEN S/{experience.price.toLocaleString()}
                     </Typography>
                 </Box>
             </CardContent>
