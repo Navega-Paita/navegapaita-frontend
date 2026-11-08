@@ -55,31 +55,22 @@ export default function DatesPricesSection({
     const handleProceedToCheckout = async () => {
         if (!selectedDate) return;
 
-        // 🟢 VALIDACIÓN DE AUTENTICACIÓN
-        // Validamos usando únicamente el userId que ya manejas
         const userId = localStorage.getItem('userId');
-
         if (!userId) {
             alert("Debes iniciar sesión para realizar una reserva.");
             return;
         }
 
-        const timestamp = Date.now();
-        const externalReference = `USER_${userId}_PKG_${packageId}_AVAIL_${selectedDate.id}_${timestamp}`;
-
-        const payload = {
-            title: `${packageTitle} (${selectedDate.startDate})`,
-            price: finalPricePerPerson * quantity,
-            quantity: quantity,
-            external_reference: externalReference,
-            availabilityId: selectedDate.id,
-        };
-
         setLoadingPayment(true);
 
         try {
-            // 🟢 Uso del servicio de pago centralizado
-            const data = await paymentService.createPreference(payload);
+            // El backend calcula el precio (con descuento), el título y la referencia
+            const data = await paymentService.createPreference({
+                userId: Number(userId),
+                packageId,
+                availabilityId: selectedDate.id,
+                quantity,
+            });
 
             if (data.initPoint) {
                 window.location.href = data.initPoint;
