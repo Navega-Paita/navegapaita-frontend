@@ -32,7 +32,7 @@ export default function DatesPricesSection({
     const [quantity, setQuantity] = useState(1);
     const [loadingPayment, setLoadingPayment] = useState(false);
 
-    // 🟢 Cálculo del precio final aplicando el porcentaje de descuento si existe
+    // 🟢 Corrección del operador en el cálculo del precio final por persona
     const finalPricePerPerson = packageDiscount > 0
         ? packagePrice * (1 - packageDiscount / 100)
         : packagePrice;

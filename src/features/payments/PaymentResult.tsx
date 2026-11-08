@@ -1,44 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { paymentService} from "../../core/services/payment.service.ts";
 
 export default function PaymentResult() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
 
-    const status = searchParams.get('status');
+    const status = searchParams.get('status') || searchParams.get('collection_status');
     const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id');
     const preferenceId = searchParams.get('preference_id');
     const paymentType = searchParams.get('payment_type');
     const statusDetail = searchParams.get('status_detail');
-    const externalReference = searchParams.get('external_reference');
 
-    useEffect(() => {
-        async function confirmPaymentOnBackend() {
-            if (paymentId && status === 'approved') {
-                try {
-                    // 🟢 Usamos el servicio centralizado
-                    await paymentService.confirmPayment({
-                        payment_id: paymentId,
-                        status: status,
-                        preference_id: preferenceId,
-                        external_reference: externalReference,
-                    });
-                } catch (error) {
-                    console.error('Error al registrar el pago en el backend:', error);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
-            }
-        }
+    const isApproved = status === 'approved' || status === 'success';
+    const isPending = status === 'pending' || status === 'in_process';
 
-        confirmPaymentOnBackend();
-    }, [paymentId, status, preferenceId, externalReference]);
-
-    const getMessageByDetail = (detail: string | null, currentStatus: string | null) => {
+    const getMessageByDetail = (detail: string | null) => {
         switch (detail) {
             case 'CONT':
                 return {
@@ -76,12 +52,20 @@ export default function PaymentResult() {
                     bgIcon: '#fee2e2',
                 };
             default:
-                if (currentStatus === 'approved') {
+                if (isApproved) {
                     return {
                         title: '¡Pago Aprobado con Éxito!',
-                        desc: 'Tu reserva turística ha sido procesada y confirmada correctamente.',
+                        desc: 'Tu reserva turística ha sido procesada y confirmada automáticamente.',
                         color: '#16a34a',
                         bgIcon: '#dcfce7',
+                    };
+                }
+                if (isPending) {
+                    return {
+                        title: 'Pago en Proceso',
+                        desc: 'Estamos esperando la confirmación de tu pago. Se actualizará automáticamente en tus reservaciones.',
+                        color: '#d97706',
+                        bgIcon: '#fef3c7',
                     };
                 }
                 return {
@@ -93,8 +77,7 @@ export default function PaymentResult() {
         }
     };
 
-    const uiContent = getMessageByDetail(statusDetail, status);
-    const isApproved = status === 'approved';
+    const uiContent = getMessageByDetail(statusDetail);
 
     return (
         <div style={{
@@ -130,6 +113,10 @@ export default function PaymentResult() {
                         <svg style={{ height: '36px', width: '36px', color: uiContent.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                         </svg>
+                    ) : isPending ? (
+                        <svg style={{ height: '36px', width: '36px', color: uiContent.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     ) : (
                         <svg style={{ height: '36px', width: '36px', color: uiContent.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -144,33 +131,29 @@ export default function PaymentResult() {
                     {uiContent.desc}
                 </p>
 
-                {loading && isApproved ? (
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.5rem' }}>Sincronizando pago con el sistema...</p>
-                ) : (
-                    <div style={{
-                        backgroundColor: '#f9fafb',
-                        borderRadius: '10px',
-                        padding: '1.25rem',
-                        textAlign: 'left',
-                        fontSize: '0.875rem',
-                        color: '#374151',
-                        marginBottom: '1.75rem',
-                        border: '1px solid #e5e7eb',
-                        lineHeight: '1.7'
-                    }}>
-                        <p><strong>ID de Pago:</strong> {paymentId || 'N/A'}</p>
-                        <p><strong>Estado:</strong> <span style={{ color: uiContent.color, fontWeight: '600' }}>{status || 'Desconocido'}</span></p>
-                        {statusDetail && <p><strong>Detalle:</strong> {statusDetail}</p>}
-                        <p><strong>Medio de Pago:</strong> {paymentType || 'Tarjeta / Otro'}</p>
-                        <p><strong>Preference ID:</strong> {preferenceId || 'N/A'}</p>
-                    </div>
-                )}
+                <div style={{
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '10px',
+                    padding: '1.25rem',
+                    textAlign: 'left',
+                    fontSize: '0.875rem',
+                    color: '#374151',
+                    marginBottom: '1.75rem',
+                    border: '1px solid #e5e7eb',
+                    lineHeight: '1.7'
+                }}>
+                    <p><strong>ID de Pago:</strong> {paymentId || 'N/A'}</p>
+                    <p><strong>Estado:</strong> <span style={{ color: uiContent.color, fontWeight: '600' }}>{status || 'Desconocido'}</span></p>
+                    {statusDetail && <p><strong>Detalle:</strong> {statusDetail}</p>}
+                    <p><strong>Medio de Pago:</strong> {paymentType || 'Tarjeta / Otro'}</p>
+                    <p><strong>Preference ID:</strong> {preferenceId || 'N/A'}</p>
+                </div>
 
                 {/* Botones de acción dinámicos */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <button
                         onClick={() => {
-                            if (isApproved) {
+                            if (isApproved || isPending) {
                                 navigate('/mis-reservaciones');
                             } else {
                                 navigate(-1);
@@ -190,10 +173,10 @@ export default function PaymentResult() {
                             transition: 'background-color 0.2s'
                         }}
                     >
-                        {isApproved ? 'Ver Mis Reservaciones' : 'Intentar nuevamente'}
+                        {isApproved || isPending ? 'Ver Mis Reservaciones' : 'Intentar nuevamente'}
                     </button>
 
-                    {isApproved && (
+                    {(isApproved || isPending) && (
                         <button
                             onClick={() => navigate('/')}
                             style={{
