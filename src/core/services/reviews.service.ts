@@ -3,10 +3,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export interface CreateReviewPayload {
     userId: number;
     packageId: number;
+    paymentId: string;
     rating: number;
     comment?: string;
 }
-
 export const reviewsService = {
     async createOrUpdate(data: CreateReviewPayload) {
         const response = await fetch(`${API_URL}/reviews`, {
